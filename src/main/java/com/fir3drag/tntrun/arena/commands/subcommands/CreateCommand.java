@@ -1,0 +1,85 @@
+package com.fir3drag.tntrun.arena.commands.subcommands;
+
+import com.fir3drag.tntrun.TntRun;
+import com.fir3drag.tntrun.arena.VoidWorldGenerator;
+import com.fir3drag.tntrun.arena.commands.interfaces.SubCommand;
+import com.fir3drag.tntrun.arena.tasks.CountdownTask;
+import org.bukkit.*;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
+
+import java.util.*;
+
+public class CreateCommand implements SubCommand {
+    private final TntRun plugin;
+
+    public CreateCommand(TntRun plugin) {
+        this.plugin = plugin;
+    }
+
+    @Override
+    public void execute(CommandSender commandSender, Command command, String s, String[] args) {
+        if (!this.plugin.checkPerms.check(commandSender, "tntrun.createArena")){
+            return;
+        }
+
+        List<String> arenas = this.plugin.data.getDataConfig().getStringList("Arenas");
+
+        if (args.length != 1){
+            commandSender.sendMessage(ChatColor.RED + "/tntrun createArena [arena]");
+            return;
+        }
+
+        if (!Bukkit.getWorlds().toString().contains(args[0]) && !arenas.contains(args[0])){ // create world if it doesn't exist
+            WorldCreator creator = new WorldCreator(args[0]);
+            creator.generator(new VoidWorldGenerator()); // makes a void world
+            creator.createWorld();
+
+            World arena = Bukkit.getWorld(args[0]);
+
+            arena.getBlockAt(0, 100, 0).setType(Material.BEDROCK);  // gives a block for player to stand on
+            arena.setSpawnLocation(0, 100, 0);
+
+            // set game rules
+            arena.setGameRuleValue("doDaylightCycle", "false");  // disable dailyLight cycle
+            arena.setGameRuleValue("doFireTick", "false");
+            arena.setGameRuleValue("doMobSpawning", "false");
+            arena.setGameRuleValue("mobGriefing", "false");
+            arena.setTime(1000);
+
+            // update arenas config
+            arenas.add(args[0]);
+            this.plugin.data.getTntRunConfig().set("Arenas", arenas);
+            this.plugin.data.saveConfig();
+
+            // update map values
+            this.plugin.playingMap.put(arena.getName(), new ArrayList<>());
+            this.plugin.spectatingMap.put(arena.getName(), new ArrayList<>());
+            this.plugin.editingMap.put(arena.getName(), new ArrayList<>());
+            this.plugin.gameStatusMap.put(arena.getName(), "stopped");
+            this.plugin.countdownMap.put(arena.getName(), new CountdownTask(plugin, arena));
+            this.plugin.rollbackMap.put(arena.getName(), new HashMap<>());
+
+            commandSender.sendMessage("Successfully created world: " + args[0]);
+
+            if (commandSender instanceof Player){
+                Player player = (Player) commandSender;
+
+                this.plugin.changePlayerMaps.addPlayerToEditing(arena.getName(), player);
+                player.teleport(arena.getSpawnLocation());
+                player.setGameMode(GameMode.CREATIVE);
+                commandSender.sendMessage("Type /tntrun leave to return to main world");
+            }
+        }
+        else {
+            commandSender.sendMessage(ChatColor.RED + "Arena " + args[0] + " already exists");
+        }
+    }
+
+    @Override
+    public List<String> tabComplete(CommandSender commandSender, Command command, String s, String[] args) {
+        return Collections.emptyList();
+    }
+}
+

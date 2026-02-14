@@ -1,0 +1,19 @@
+# Arena settings (must be integers)
+
+# countdown (time in seconds)
+fullCountdown: 60
+halfCountdown: 30
+quarterCountdown: 15
+
+forceStartCountdown: 5
+
+requiredPlayersToStartCountdown: 2
+requiredPlayersToStartHalfCountdown: 4
+requiredPlayersToStartQuarterCountdown: 8
+maxPlayers: 8
+
+# player
+playerDeathYLevel: 0
+
+# spectator
+spectatorVoidYLevel: -20

@@ -1,0 +1,64 @@
+name: TntRun
+version: '${project.version}'
+main: com.fir3drag.tntrun.TntRun
+authors: [fir3drag]
+commands:
+  tntrun:
+    description: Main command for TntRun plugin
+    usage: /<command> <subcommand> [args]
+    aliases: [tr]
+    subcommands:
+      createArena:
+        description: Creates a TntRun arena
+        permission: tntrun.createArena
+        permission-message: "You don't have permission to create TntRun arenas."
+      deleteArena:
+        description: Deletes a TntRun arena
+        permission: tntrun.deleteArena
+        permission-message: "You don't have permission to delete TntRun arenas."
+      editArena:
+        description: Edits a TntRun arena
+        permission: tntrun.editArena
+        permission-message: "You don't have permission to edit TntRun arenas."
+      forceStart:
+        description: Reduces the start time to 10s
+        permission: tntrun.forceStart
+        permission-message: "You don't have permission to force start TntRun arenas."
+      join:
+        description: Allows a player to join a TntRun arena
+        permission: tntrun.join
+        permission-message: "You don't have permission to join TntRun arenas."
+      leave:
+        description: Allows a player to leave TntRun arenas
+        permission: tntrun.leave
+        permission-message: "You don't have permission to leave TntRun arenas."
+      listArenas:
+        description: Allows a player to list TntRun arenas
+        permission: tntrun.listArenas
+        permission-message: "You don't have permission to list TntRun arenas."
+
+permissions:
+  tntrun.admin:
+    description: Allows access to all TNTRun commands
+    default: op
+  tntrun.createArena:
+    description: Allows the player to create an arena
+    default: op
+  tntrun.deleteArena:
+    description: Allows the player to delete an arena
+    default: op
+  tntrun.editArena:
+    description: Allows the player to edit an arena
+    default: op
+  tntrun.forceStart:
+    description: Allows the player to reduce the start time of an arena to 10s
+    default: op
+  tntrun.join:
+    description: Allows the player to join an arena
+    default: true
+  tntrun.leave:
+    description: Allows the player to leave an arena
+    default: true
+  tntrun.listArenas:
+    description: Allows the player to list the arenas
+    default: true
