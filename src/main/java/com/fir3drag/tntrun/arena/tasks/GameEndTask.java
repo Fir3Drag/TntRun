@@ -8,6 +8,7 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.util.ArrayList;
 import java.util.Map;
 
 public class GameEndTask {
@@ -15,11 +16,23 @@ public class GameEndTask {
         new BukkitRunnable() {
             @Override
             public void run() {
-                for (Player p : arena.getPlayers()) { // send the players back to the lobby
-                    plugin.changePlayerMaps.removePlayerFromPlaying(arena.getName(), p);  // run before tp to show spec to the right players
+                // show all players to you and you to them
+                for (Player p : plugin.playingMap.get(arena.getName())) {
+                    plugin.customSpectator.showAllPlayers(arena.getName(), p);
+                }
+                for (Player p : plugin.spectatingMap.get(arena.getName())) {
+                    plugin.customSpectator.showAllPlayers(arena.getName(), p);
+                }
+
+                // send the players back to the lobby and clear the maps holding player info
+                for (Player p : new ArrayList<>(plugin.playingMap.get(arena.getName()))) {
+                    plugin.changePlayerMaps.removePlayerFromPlaying(arena.getName(), p);
                     p.teleport(Bukkit.getWorlds().get(0).getSpawnLocation());
                 }
-                plugin.gameStatusMap.replace(arena.getName(), "restarting");
+                for (Player p : new ArrayList<>(plugin.spectatingMap.get(arena.getName()))) {
+                    plugin.changePlayerMaps.removePlayerFromSpectating(arena.getName(), p);
+                    p.teleport(Bukkit.getWorlds().get(0).getSpawnLocation());
+                }
 
                 // gets the rollback map and rolls the blocks back, then clears the map
                 Map<Block, Material> rollbackMap = plugin.rollbackMap.get(arena.getName());

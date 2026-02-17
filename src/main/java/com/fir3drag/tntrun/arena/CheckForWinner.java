@@ -18,14 +18,21 @@ public class CheckForWinner {
 
         if (this.plugin.gameStatusMap.get(arenaName).equals("playing")) {
             if (this.plugin.playingMap.get(arenaName).size() > 1) {
-                for (Player p : arena.getPlayers()) { // if not msgs all the players how many are left
-                    p.sendMessage("There are " + this.plugin.playingMap.get(arenaName).size() + " left");
+                for (Player p : this.plugin.playingMap.get(arenaName)) { // msgs players
+                    p.sendMessage(ChatColor.YELLOW  + "There are "  + this.plugin.playingMap.get(arenaName).size() + " left");
                 }
-            } else {
-                for (Player p : arena.getPlayers()) { // if game is over msgs players the winner
+                for (Player p : this.plugin.spectatingMap.get(arenaName)) { // msgs spectators
+                    p.sendMessage(ChatColor.YELLOW  + "There are " + this.plugin.playingMap.get(arenaName).size() + " left");
+                }
+            }
+            else {
+                for (Player p : this.plugin.playingMap.get(arenaName)) { // msgs players
                     p.sendMessage(ChatColor.YELLOW + this.plugin.playingMap.get(arenaName).get(0).getDisplayName() + " has won!");
                 }
-                this.plugin.changePlayerMaps.removePlayerFromPlaying(arenaName, this.plugin.playingMap.get(arenaName).get(0)); // remove the player from playing list
+                for (Player p : this.plugin.spectatingMap.get(arenaName)) { // msgs spectators
+                    p.sendMessage(ChatColor.YELLOW + this.plugin.playingMap.get(arenaName).get(0).getDisplayName() + " has won!");
+                }
+                plugin.gameStatusMap.replace(arena.getName(), "restarting"); // placed here to stop death msg if game ends and last player is in the void
                 new GameEndTask(plugin, player.getWorld());
             }
         }

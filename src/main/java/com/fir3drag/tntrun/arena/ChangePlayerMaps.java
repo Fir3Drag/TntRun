@@ -1,6 +1,7 @@
 package com.fir3drag.tntrun.arena;
 
 import com.fir3drag.tntrun.TntRun;
+import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 
 import java.util.List;
@@ -28,8 +29,7 @@ public class ChangePlayerMaps {
             spectatingList.add(player);
         }
         this.plugin.spectatingMap.replace(arenaName, spectatingList);  // allows the player to edit the world
-
-        this.plugin.customSpectator.enableSpectator(player);
+        this.plugin.customSpectator.setSpectator(arenaName, player);
     }
 
     public void addPlayerToEditing(String arenaName, Player player){
@@ -37,6 +37,7 @@ public class ChangePlayerMaps {
 
         if (!editingList.contains(player)){  // prevent duplicates in the list
             editingList.add(player);
+            player.setGameMode(GameMode.CREATIVE);
         }
         this.plugin.editingMap.replace(arenaName, editingList);  // allows the player to edit the world
     }
@@ -51,10 +52,6 @@ public class ChangePlayerMaps {
     public void removePlayerFromSpectating(String arenaName, Player player){
         // remove the player from current spectating list
         List<Player> spectatingList = this.plugin.spectatingMap.get(arenaName);
-
-        if (spectatingList.contains(player)){
-            this.plugin.customSpectator.disableSpectator(player);
-        }
         spectatingList.remove(player);
         this.plugin.spectatingMap.replace(arenaName, spectatingList);
     }
@@ -62,6 +59,10 @@ public class ChangePlayerMaps {
     public void removePlayerFromEditing(String arenaName, Player player){
         // remove the player from the current world editing list
         List<Player> editingList = this.plugin.editingMap.get(arenaName);
+
+        if (editingList.contains(player)){
+            player.setGameMode(GameMode.SURVIVAL);
+        }
         editingList.remove(player);
         this.plugin.editingMap.replace(arenaName, editingList);
     }

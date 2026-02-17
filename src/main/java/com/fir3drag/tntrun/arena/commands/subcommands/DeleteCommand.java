@@ -42,14 +42,15 @@ public class DeleteCommand implements SubCommand {
 
     @Override
     public void execute(CommandSender commandSender, Command command, String s, String[] args) {
-        if (!this.plugin.checkPerms.check(commandSender, "tntrun.deleteArena")){
+        if (!this.plugin.checkPerms.check(commandSender, "tntrun.delete")){
             return;
         }
 
-        List<String> arenas = this.plugin.data.getDataConfig().getStringList("Arenas");
+        List<String> arenas = this.plugin.data.getDataConfig().getStringList("arenas");
+        List<String> disabledArenas = this.plugin.data.getDataConfig().getStringList("disabledArenas");
 
         if (args.length == 0){
-            commandSender.sendMessage(ChatColor.RED + "/tntrun deleteArena [arena]");
+            commandSender.sendMessage(ChatColor.RED + "/tntrun delete [arena]");
             return;
         }
         String arenaName = args[0];
@@ -58,44 +59,53 @@ public class DeleteCommand implements SubCommand {
             World arena = Bukkit.getWorld(arenaName);
 
             if (arena == null){
-                commandSender.sendMessage(ChatColor.RED + "Arena " + arenaName + " does not exist");
+                commandSender.sendMessage(ChatColor.RED + "Arena '" + arenaName + "' does not exist.");
                 return;
+            }
+            // show all players to you and you to them
+            for (Player p : plugin.playingMap.get(arenaName)) {
+                plugin.customSpectator.showAllPlayers(arenaName, p);
+            }
+            for (Player p : plugin.spectatingMap.get(arenaName)) {
+                plugin.customSpectator.showAllPlayers(arenaName, p);
             }
 
             for (Player p: arena.getPlayers()){  // if players in the world send them to default world
                 p.teleport(Bukkit.getWorlds().get(0).getSpawnLocation());
             }
             // cancel any countdown
-            this.plugin.countdownMap.get(arena.getName()).cancelCountdown();
+            this.plugin.countdownMap.get(arenaName).cancelCountdown();
 
             // updates configs
             arenas.remove(arenaName);
-            this.plugin.data.getTntRunConfig().set("Arenas", arenas);
+            disabledArenas.remove(arenaName);
+            this.plugin.data.getDataConfig().set("Arenas", arenas);
+            this.plugin.data.getDataConfig().set("disabledArenas", disabledArenas);
             this.plugin.data.saveConfig();
 
             // update map values
-            this.plugin.playingMap.remove(arena.getName());
-            this.plugin.spectatingMap.remove(arena.getName());
-            this.plugin.editingMap.remove(arena.getName());
-            this.plugin.gameStatusMap.remove(arena.getName());
-            this.plugin.countdownMap.remove(arena.getName());
-            this.plugin.rollbackMap.remove(arena.getName());
+            this.plugin.playingMap.remove(arenaName);
+            this.plugin.spectatingMap.remove(arenaName);
+            this.plugin.editingMap.remove(arenaName);
+            this.plugin.gameStatusMap.remove(arenaName);
+            this.plugin.countdownMap.remove(arenaName);
+            this.plugin.rollbackMap.remove(arenaName);
 
             // unloads and deletes world files
             Bukkit.unloadWorld(arenaName, false);
             deleteWorldFiles(arena.getWorldFolder());
 
-            commandSender.sendMessage("Arena " + arenaName + " deleted");
+            commandSender.sendMessage(ChatColor.YELLOW + "Arena '" + arenaName + "' deleted.");
         }
         else {
-            commandSender.sendMessage(ChatColor.RED +"Arena " + arenaName + " does not exist");
+            commandSender.sendMessage(ChatColor.RED +"Arena '" + arenaName + "' does not exist.");
         }
     }
 
     @Override
     public List<String> tabComplete(CommandSender commandSender, Command command, String s, String[] args) {
         if (args.length == 1){
-            List<String> allCompletions = this.plugin.data.getDataConfig().getStringList("Arenas");
+            List<String> allCompletions = this.plugin.data.getDataConfig().getStringList("arenas");
             List<String> completions = new ArrayList<>();
 
             for (String completion: allCompletions){ // dynamically updates the tab list depending on whats written

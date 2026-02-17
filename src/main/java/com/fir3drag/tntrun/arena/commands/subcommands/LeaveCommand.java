@@ -26,25 +26,26 @@ public class LeaveCommand implements SubCommand {
             return;
         }
 
-        List<String> arenas = this.plugin.data.getDataConfig().getStringList("Arenas");
+        List<String> arenas = this.plugin.data.getDataConfig().getStringList("arenas");
 
         if (commandSender instanceof Player){
             Player player = (Player) commandSender;
             String arenaName = player.getWorld().getName();
             World arena = player.getWorld();
 
-            // teleport first to prevent getting countdown canceled msgs
-            player.teleport(Bukkit.getWorlds().get(0).getSpawnLocation());
-            player.setGameMode(GameMode.SURVIVAL);
-
             if (arenas.contains(arenaName)){  // only runs arena features if in an arena
+                // teleport first to prevent getting countdown canceled msgs
+                player.teleport(Bukkit.getWorlds().get(0).getSpawnLocation());
+                this.plugin.customSpectator.showAllPlayers(arenaName, player);
                 this.plugin.changePlayerMaps.removePlayerAll(arenaName, player);  // removes the player from the lists for the arena their in
                 this.plugin.countdown.checkForCancel(arena);  // handles players leaving during start phase
                 this.plugin.checkForWinner.check(arena, player);   // handles players leaving during game
             }
+            else {
+                player.sendMessage(ChatColor.RED + "You are not in an arena.");            }
         }
         else{
-            commandSender.sendMessage(ChatColor.RED + "You must be a player to use this command");
+            commandSender.sendMessage(ChatColor.RED + "You must be a player to use this command.");
         }
     }
 

@@ -15,18 +15,20 @@ public class CommandManager implements CommandExecutor, TabCompleter {
     private final Map<String, SubCommand> subCommands = new HashMap<>();
 
     public CommandManager(TntRun plugin){
-        subCommands.put("createArena", new CreateCommand(plugin));
-        subCommands.put("deleteArena", new DeleteCommand(plugin));
-        subCommands.put("editArena", new EditCommand(plugin));
+        subCommands.put("create", new CreateCommand(plugin));
+        subCommands.put("delete", new DeleteCommand(plugin));
+        subCommands.put("disable", new DisableCommand(plugin));
+        subCommands.put("edit", new EditCommand(plugin));
+        subCommands.put("enable", new EnableCommand(plugin));
         subCommands.put("forceStart", new ForceStartCommand(plugin));
         subCommands.put("join", new JoinCommand(plugin));
         subCommands.put("leave", new LeaveCommand(plugin));
-        subCommands.put("listArenas", new ListCommand(plugin));
+        subCommands.put("list", new ListCommand(plugin));
     }
 
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] args) {
-        String errorMsg = ChatColor.RED + "/tntrun createArena | deleteArena | editArena | forceStart | join | leave | listArenas";
+        String errorMsg = ChatColor.RED + "/tntrun create | delete | disable | edit | enable | forceStart | join | leave | list";
 
         if (args.length == 0) {
             commandSender.sendMessage(errorMsg);
@@ -44,7 +46,7 @@ public class CommandManager implements CommandExecutor, TabCompleter {
             subCommand.execute(commandSender, command, s, subArgs);
         }
         else {
-            commandSender.sendMessage(ChatColor.RED + "Unknown command");
+            commandSender.sendMessage(ChatColor.RED + "Unknown command.");
             commandSender.sendMessage(errorMsg);
         }
         return true;
@@ -53,7 +55,7 @@ public class CommandManager implements CommandExecutor, TabCompleter {
     @Override
     public List<String> onTabComplete(CommandSender commandSender, Command command, String s, String[] args) {
         if (args.length == 1){
-            List<String> allCompletions = Arrays.asList("createArena", "deleteArena", "editArena", "forceStart", "join", "leave", "listArenas");
+            List<String> allCompletions = Arrays.asList("create", "delete", "disable", "edit", "enable", "forceStart", "join", "leave", "list");
             List<String> completions = new ArrayList<>();
 
             for (String completion: allCompletions){ // dynamically updates the tab list depending on whats written

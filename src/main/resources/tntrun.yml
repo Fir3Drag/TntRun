@@ -1,4 +1,4 @@
-# Arena settings (must be integers)
+# Arena settings
 
 # countdown (time in seconds)
 fullCountdown: 60
@@ -7,13 +7,24 @@ quarterCountdown: 15
 
 forceStartCountdown: 5
 
-requiredPlayersToStartCountdown: 2
+requiredPlayersToStartCountdown: 2  # cannot be set less than 2 (will be set to 2 in memory when run)
 requiredPlayersToStartHalfCountdown: 4
 requiredPlayersToStartQuarterCountdown: 8
 maxPlayers: 8
 
-# player
-playerDeathYLevel: 0
+# starting
+forcePlayerGameMode: true
+clearInventory: true
+setFullHealth: true
+setFullHunger: true
 
-# spectator
-spectatorVoidYLevel: -20
+# playing
+gracePeriod: 2  # after Go! how long before blocks start disappearing
+tntRemoveDelay: 8  # ticks
+playerDeathYLevel: 0
+voidYLevel: -20  # needs to be less than playerDeathYLevel (will tp players back to world spawn if they fall below this y level)
+
+disableDamage: true
+disableWeather: true
+disableHunger: true
+disableCreatureSpawn: true

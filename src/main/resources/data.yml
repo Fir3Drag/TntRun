@@ -1,2 +1,3 @@
 # stored variables
-Arenas: {}
+arenas: {}
+disabledArenas: {}

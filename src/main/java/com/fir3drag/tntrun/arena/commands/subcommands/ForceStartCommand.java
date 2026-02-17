@@ -24,16 +24,15 @@ public class ForceStartCommand implements SubCommand {
             return;
         }
 
-        List<String> arenas = this.plugin.data.getDataConfig().getStringList("Arenas");
+        List<String> arenas = this.plugin.data.getDataConfig().getStringList("arenas");
         int forceStartCountdown = this.plugin.data.getTntRunConfig().getInt("forceStartCountdown");
 
         if (commandSender instanceof Player){
 
             Player player = (Player) commandSender;
-            World arena = player.getWorld();
             String arenaName = player.getWorld().getName();
 
-            if (arena.getPlayers().size() > 1){
+            if (this.plugin.playingMap.get(arenaName).size() > 1){
                 if (arenas.contains(arenaName)){  // check your in an arena
                     if (this.plugin.countdownMap.get(arenaName).isCounting()){
                         this.plugin.countdownMap.get(arenaName).modifyCountdown(forceStartCountdown);
@@ -45,11 +44,11 @@ public class ForceStartCommand implements SubCommand {
                 }
             }
             else {
-                player.sendMessage("There must be at least 2 players in the game");
+                player.sendMessage(ChatColor.RED + "There must be at least 2 players in the arena.");
             }
         }
         else {
-            commandSender.sendMessage("You must be a player to use this command");
+            commandSender.sendMessage(ChatColor.RED + "You must be a player to use this command.");
         }
     }
 

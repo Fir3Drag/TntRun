@@ -3,6 +3,7 @@ package com.fir3drag.tntrun;
 import com.fir3drag.tntrun.arena.*;
 import com.fir3drag.tntrun.arena.commands.CommandManager;
 import com.fir3drag.tntrun.arena.listeners.*;
+import com.fir3drag.tntrun.arena.tasks.BlockRemoverTask;
 import com.fir3drag.tntrun.arena.tasks.CountdownTask;
 import com.fir3drag.tntrun.configuration.DataManager;
 import org.bukkit.Bukkit;
@@ -24,7 +25,7 @@ public final class TntRun extends JavaPlugin {
     public CustomSpectator customSpectator;
     public CheckForWinner checkForWinner;
     public Countdown countdown;
-    public TntRunBlockRemover tntRunBlockRemover;
+    public BlockRemoverTask blockRemoverTask;
 
     public Map<String, List<Player>> playingMap = new HashMap<>();
     public Map<String, List<Player>> spectatingMap = new HashMap<>();
@@ -34,7 +35,7 @@ public final class TntRun extends JavaPlugin {
     public Map<String, Map<Block, Material>> rollbackMap = new HashMap<>();
 
     public void loadWorlds(){
-        for (String worldName: data.getDataConfig().getStringList("Arenas")) {  // load in the worlds
+        for (String worldName: data.getDataConfig().getStringList("arenas")) {  // load in the worlds
             World world = Bukkit.getWorld(worldName);
 
             if (world == null) {
@@ -53,11 +54,19 @@ public final class TntRun extends JavaPlugin {
     }
 
     /*
-    TODO handle the player count based off playingList instead of players in the world
     TODO create a leaderboard for countdown so chat isn't spammed
     TODO make tntrun join display a window where u can select arenas through an inventory
-    TODO reword all chat msgs
     TODO custom spectator stuff like bed to leave game and compass to tp to players
+    TODO double jumps - store a map of players and how many double jumps they have (reset -> config amount) check if their in the air, add y velocity to player
+    TODO maybe put a confirm on the delete command
+    TODO could put all arenas in a single world (too many worlds might look confusing in the server folder) -> require setting positions to protect and stuff like that needing a /tr pos1 /tr pos2
+
+    TODO make a /tr spec command instead of /tr join
+    TODO test concurrent games
+
+    TODO spectating config:
+    have night vision: true
+    can see other spectators: true (might make this player decided with a custom item)
      */
 
     @Override
@@ -73,29 +82,35 @@ public final class TntRun extends JavaPlugin {
         customSpectator = new CustomSpectator(this);
         checkForWinner = new CheckForWinner(this);
         countdown = new Countdown(this);
-        tntRunBlockRemover = new TntRunBlockRemover(this);
+        blockRemoverTask = new BlockRemoverTask(this);
         loadWorlds();
 
         // commands
         Objects.requireNonNull(getCommand("tntrun")).setExecutor(new CommandManager(this));
 
         // listeners
-        Bukkit.getPluginManager().registerEvents(new FallListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new BlockBreakListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new BlockPlaceListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new CreatureSpawnListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new PlayerDamageListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new PlayerHungerListener(this), this);
         Bukkit.getPluginManager().registerEvents(new PlayerJoinListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new PlayerMoveListener(this), this);
         Bukkit.getPluginManager().registerEvents(new PlayerQuitListener(this), this);
-        Bukkit.getPluginManager().registerEvents(new TntRemoveListener(this), this);
-        Bukkit.getPluginManager().registerEvents(new VoidListener(this), this);
-        Bukkit.getPluginManager().registerEvents(new WorldModifyListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new WeatherListener(this), this);
     }
 
     @Override
     public void onDisable() {
         // tps all players out of worlds on restart to prevent any logic errors
-        for (String arenaName: data.getDataConfig().getStringList("Arenas")) {  // get worlds
+        for (String arenaName: data.getDataConfig().getStringList("arenas")) {  // get worlds
             World arena = Bukkit.getWorld(arenaName);
 
             if (arena != null && !this.gameStatusMap.get(arenaName).isEmpty()){
-                for (Player p : arena.getPlayers()) { // send the players back to the lobby
+                for (Player p : playingMap.get(arenaName)) { // send the players back to the lobby
+                    p.teleport(Bukkit.getWorlds().get(0).getSpawnLocation());
+                }
+                for (Player p : spectatingMap.get(arenaName)) { // send the spectators back to the lobby
                     p.teleport(Bukkit.getWorlds().get(0).getSpawnLocation());
                 }
                 plugin.gameStatusMap.replace(arena.getName(), "restarting");

@@ -18,15 +18,16 @@ public class PlayerQuitListener implements Listener {
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event){  // removes player from map lists when they disconnect to prevent errors
-        List<String> arenas = this.plugin.data.getDataConfig().getStringList("Arenas");
+        List<String> arenas = this.plugin.data.getDataConfig().getStringList("arenas");
         Player player = event.getPlayer();
-        World currentWorld = event.getPlayer().getWorld();
-        String currentWorldName = currentWorld.getName();
+        World arena = event.getPlayer().getWorld();
+        String arenaName = arena.getName();
 
-        if (arenas.contains(currentWorldName)){  // checks if its an arena and handles players leaving during start phase
-            this.plugin.changePlayerMaps.removePlayerAll(currentWorldName, player);
-            this.plugin.countdown.checkForCancel(currentWorld);
-            this.plugin.checkForWinner.check(currentWorld, player);
+        if (arenas.contains(arenaName)){  // checks if its an arena and handles players leaving during start phase
+            this.plugin.customSpectator.showAllPlayers(arenaName, player);
+            this.plugin.changePlayerMaps.removePlayerAll(arenaName, player);
+            this.plugin.countdown.checkForCancel(arena);
+            this.plugin.checkForWinner.check(arena, player);
         }
     }
 }

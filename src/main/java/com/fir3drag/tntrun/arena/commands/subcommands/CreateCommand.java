@@ -20,23 +20,25 @@ public class CreateCommand implements SubCommand {
 
     @Override
     public void execute(CommandSender commandSender, Command command, String s, String[] args) {
-        if (!this.plugin.checkPerms.check(commandSender, "tntrun.createArena")){
+        if (!this.plugin.checkPerms.check(commandSender, "tntrun.create")){
             return;
         }
 
-        List<String> arenas = this.plugin.data.getDataConfig().getStringList("Arenas");
+        List<String> arenas = this.plugin.data.getDataConfig().getStringList("arenas");
+        List<String> disabledArenas = this.plugin.data.getDataConfig().getStringList("disabledArenas");
 
         if (args.length != 1){
-            commandSender.sendMessage(ChatColor.RED + "/tntrun createArena [arena]");
+            commandSender.sendMessage(ChatColor.RED + "/tntrun create [arena]");
             return;
         }
+        String arenaName = args[0];
 
-        if (!Bukkit.getWorlds().toString().contains(args[0]) && !arenas.contains(args[0])){ // create world if it doesn't exist
-            WorldCreator creator = new WorldCreator(args[0]);
+        if (!Bukkit.getWorlds().toString().contains(arenaName) && !arenas.contains(arenaName)){ // create world if it doesn't exist
+            WorldCreator creator = new WorldCreator(arenaName);
             creator.generator(new VoidWorldGenerator()); // makes a void world
             creator.createWorld();
 
-            World arena = Bukkit.getWorld(args[0]);
+            World arena = Bukkit.getWorld(arenaName);
 
             arena.getBlockAt(0, 100, 0).setType(Material.BEDROCK);  // gives a block for player to stand on
             arena.setSpawnLocation(0, 100, 0);
@@ -47,10 +49,13 @@ public class CreateCommand implements SubCommand {
             arena.setGameRuleValue("doMobSpawning", "false");
             arena.setGameRuleValue("mobGriefing", "false");
             arena.setTime(1000);
+            arena.setDifficulty(Difficulty.PEACEFUL);
 
             // update arenas config
-            arenas.add(args[0]);
-            this.plugin.data.getTntRunConfig().set("Arenas", arenas);
+            arenas.add(arenaName);
+            disabledArenas.add(arenaName);  // arenas start disabled
+            this.plugin.data.getDataConfig().set("arenas", arenas);
+            this.plugin.data.getDataConfig().set("disabledArenas", disabledArenas);
             this.plugin.data.saveConfig();
 
             // update map values
@@ -61,7 +66,9 @@ public class CreateCommand implements SubCommand {
             this.plugin.countdownMap.put(arena.getName(), new CountdownTask(plugin, arena));
             this.plugin.rollbackMap.put(arena.getName(), new HashMap<>());
 
-            commandSender.sendMessage("Successfully created world: " + args[0]);
+            commandSender.sendMessage(ChatColor.YELLOW + "Successfully created arena: '" + arenaName + "'.");
+            commandSender.sendMessage(ChatColor.YELLOW + "Arena is disabled for editing. use /tntrun enable " + arenaName +
+                    " so that players can join.");
 
             if (commandSender instanceof Player){
                 Player player = (Player) commandSender;
@@ -69,11 +76,11 @@ public class CreateCommand implements SubCommand {
                 this.plugin.changePlayerMaps.addPlayerToEditing(arena.getName(), player);
                 player.teleport(arena.getSpawnLocation());
                 player.setGameMode(GameMode.CREATIVE);
-                commandSender.sendMessage("Type /tntrun leave to return to main world");
+                commandSender.sendMessage(ChatColor.YELLOW + "Type /tntrun leave to return to main world.");
             }
         }
         else {
-            commandSender.sendMessage(ChatColor.RED + "Arena " + args[0] + " already exists");
+            commandSender.sendMessage(ChatColor.RED + "Arena '" + arenaName + "' already exists.");
         }
     }
 

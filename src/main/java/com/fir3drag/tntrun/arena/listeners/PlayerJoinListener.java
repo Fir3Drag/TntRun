@@ -20,27 +20,28 @@ public class PlayerJoinListener implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event){
-        List<String> arenas = this.plugin.data.getDataConfig().getStringList("Arenas");
+        List<String> arenas = this.plugin.data.getDataConfig().getStringList("arenas");
         int maxPlayers = this.plugin.data.getTntRunConfig().getInt("maxPlayers");
 
         Player player = event.getPlayer();
-        World currentWorld = event.getPlayer().getWorld();
-        String currentWorldName = currentWorld.getName();
+        World arena = event.getPlayer().getWorld();
+        String arenaName = arena.getName();
 
-        if (arenas.contains(currentWorldName)){  // checks if its an arena
-            if (currentWorld.getPlayers().size() > maxPlayers && this.plugin.gameStatusMap.get(currentWorldName).equals("starting")){
+        if (arenas.contains(arenaName)){  // checks if its an arena
+            if (this.plugin.playingMap.get(arenaName).size() > maxPlayers && this.plugin.gameStatusMap.get(arenaName).equals("starting")){
                 player.teleport(Bukkit.getWorlds().get(0).getSpawnLocation());
-                player.sendMessage(ChatColor.RED + "The arena you were in is full, join back as a spectator after it starts.");
+                player.sendMessage(ChatColor.RED + "The arena '" + arenaName + "' you were in is full, join back as a spectator after it starts.");
                 return;
             }
 
             // update map values
-            if (this.plugin.gameStatusMap.get(player.getWorld().getName()).equals("stopped") || this.plugin.gameStatusMap.get(player.getWorld().getName()).equals("starting")){
-                this.plugin.changePlayerMaps.addPlayerToPlaying(currentWorldName, player);
+            if (this.plugin.gameStatusMap.get(player.getWorld().getName()).equals("stopped") ||
+                    this.plugin.gameStatusMap.get(player.getWorld().getName()).equals("starting")){
+                this.plugin.changePlayerMaps.addPlayerToPlaying(arenaName, player);
             }
 
             if (this.plugin.gameStatusMap.get(player.getWorld().getName()).equals("playing")){
-                this.plugin.changePlayerMaps.addPlayerToSpectating(currentWorldName, player);
+                this.plugin.changePlayerMaps.addPlayerToSpectating(arenaName, player);
             }
 
             // handles players joining during start phase

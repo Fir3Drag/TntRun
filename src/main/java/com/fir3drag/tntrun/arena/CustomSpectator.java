@@ -11,23 +11,52 @@ public class CustomSpectator {
         this.plugin = plugin;
     }
 
-    public void enableSpectator(Player player){  // custom spectator
+    // hide this player from all "playing" players, show spectators to this player
+    public void setSpectator(String arenaName, Player player){  // custom spectator
         if (player.getGameMode() != GameMode.CREATIVE && player.getGameMode() != GameMode.SPECTATOR){
             player.setAllowFlight(true);
+            hideYouFromPlayers(arenaName, player);
+            showSpectators(arenaName, player);
+        }
+    }
 
-            for (Player p: this.plugin.playingMap.get(player.getWorld().getName())){  // hides the spectator for all "playing" players
-                p.hidePlayer(player);
+    // show this player to all and show all to this player
+    public void showAllPlayers(String arenaName, Player player){
+        if (player.getGameMode() != GameMode.CREATIVE && player.getGameMode() != GameMode.SPECTATOR){
+            player.setAllowFlight(false);
+            showPlayersYou(arenaName, player);
+            showSpectators(arenaName, player);
+        }
+    }
+
+    public void showSpectators(String arenaName, Player player){
+        for (Player p: this.plugin.spectatingMap.get(arenaName)){  // show the players spectating
+            if (p != player){
+                player.showPlayer(p);
             }
         }
     }
 
-    public void disableSpectator(Player player){
-        if (player.getGameMode() != GameMode.CREATIVE && player.getGameMode() != GameMode.SPECTATOR)
-        {
-            player.setAllowFlight(false);
+    public void hideSpectators(String arenaName, Player player){
+        for (Player p: this.plugin.spectatingMap.get(arenaName)){  // hide all spectators from this player
+            if (p != player){
+                player.hidePlayer(p);
+            }
+        }
+    }
 
-            for (Player p: player.getWorld().getPlayers()){  // shows the spectator for all players in world
+    public void showPlayersYou(String arenaName, Player player){
+        for (Player p: this.plugin.playingMap.get(arenaName)){  // show the players spectating
+            if (p != player){
                 p.showPlayer(player);
+            }
+        }
+    }
+
+    public void hideYouFromPlayers(String arenaName, Player player){
+        for (Player p: this.plugin.playingMap.get(arenaName)){  // hide all spectators from this player
+            if (p != player){
+                p.hidePlayer(player);
             }
         }
     }
