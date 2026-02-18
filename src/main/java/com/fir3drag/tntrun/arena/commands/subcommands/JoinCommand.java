@@ -10,10 +10,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class JoinCommand implements SubCommand {
     private final TntRun plugin;
@@ -24,7 +21,7 @@ public class JoinCommand implements SubCommand {
 
     @Override
     public void execute(CommandSender commandSender, Command command, String s, String[] args) {
-        if (!this.plugin.checkPerms.check(commandSender, "tntrun.join")){
+        if (!this.plugin.perms.check(commandSender, "tntrun.join")){
             return;
         }
 
@@ -74,9 +71,9 @@ public class JoinCommand implements SubCommand {
             // handles the world you were in (done after to make sure msgs are sent correctly, e.g. tp player out of world before the countdown cancel msg appears
             if (arenas.contains(currentWorldName)) { // current world checks
                 // if the player is already in an arena remove them from the lists before tping them to the new arena
-                this.plugin.changePlayerMaps.removePlayerAll(arenaName, player);
+                this.plugin.playerMaps.removeAll(arenaName, player);
                 this.plugin.countdown.checkForCancel(currentWorld);  // handles the countdown
-                this.plugin.checkForWinner.check(currentWorld, player);  // handles players leaving during game
+                this.plugin.winner.checkForWinner(currentWorld, player);  // handles players leaving during game
             }
 
             if (arenas.contains(arenaName)) {  // prevents you joining the arena whilst its restarting
@@ -93,12 +90,12 @@ public class JoinCommand implements SubCommand {
                 if (clearInventory) player.getInventory().clear();
 
                 if (this.plugin.gameStatusMap.get(arenaName).equals("stopped") || this.plugin.gameStatusMap.get(arenaName).equals("starting")) {  // if the game is not started add them as a player
-                    this.plugin.changePlayerMaps.addPlayerToPlaying(arenaName, player);  // adds the player to the playing list
+                    this.plugin.playerMaps.addToPlaying(arenaName, player);  // adds the player to the playing list
                     this.plugin.countdown.checkForStart(arena, 0);  // handles the countdown times depending on player size
                 }
 
                 if (this.plugin.gameStatusMap.get(arenaName).equals("playing")) {  // if the game is started add them as a spectator
-                    this.plugin.changePlayerMaps.addPlayerToSpectating(arenaName, player);// adds the player to the spectating list
+                    this.plugin.playerMaps.addToSpectating(arenaName, player);// adds the player to the spectating list
                 }
             }
         }
@@ -116,7 +113,7 @@ public class JoinCommand implements SubCommand {
             }
 
             for (String completion: allCompletions){ // dynamically updates the tab list depending on whats written
-                if (completion.startsWith(args[0]))
+                if (completion.toLowerCase(Locale.ROOT).startsWith(args[0].toLowerCase(Locale.ROOT)))
                 {
                     completions.add(completion);
                 }

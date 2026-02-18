@@ -7,16 +7,13 @@ import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
-import static org.bukkit.Bukkit.getLogger;
+import java.util.Locale;
 
 public class DeleteCommand implements SubCommand {
     private final TntRun plugin;
@@ -42,7 +39,7 @@ public class DeleteCommand implements SubCommand {
 
     @Override
     public void execute(CommandSender commandSender, Command command, String s, String[] args) {
-        if (!this.plugin.checkPerms.check(commandSender, "tntrun.delete")){
+        if (!this.plugin.perms.check(commandSender, "tntrun.delete")){
             return;
         }
 
@@ -64,10 +61,10 @@ public class DeleteCommand implements SubCommand {
             }
             // show all players to you and you to them
             for (Player p : plugin.playingMap.get(arenaName)) {
-                plugin.customSpectator.showAllPlayers(arenaName, p);
+                plugin.spectator.showAllPlayersYouAndYouAllPlayers(arenaName, p);
             }
             for (Player p : plugin.spectatingMap.get(arenaName)) {
-                plugin.customSpectator.showAllPlayers(arenaName, p);
+                plugin.spectator.showAllPlayersYouAndYouAllPlayers(arenaName, p);
             }
 
             for (Player p: arena.getPlayers()){  // if players in the world send them to default world
@@ -109,7 +106,7 @@ public class DeleteCommand implements SubCommand {
             List<String> completions = new ArrayList<>();
 
             for (String completion: allCompletions){ // dynamically updates the tab list depending on whats written
-                if (completion.startsWith(args[0]))
+                if (completion.toLowerCase(Locale.ROOT).startsWith(args[0].toLowerCase(Locale.ROOT)))
                 {
                     completions.add(completion);
                 }

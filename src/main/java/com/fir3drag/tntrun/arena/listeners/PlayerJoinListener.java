@@ -1,7 +1,6 @@
 package com.fir3drag.tntrun.arena.listeners;
 
 import com.fir3drag.tntrun.TntRun;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
@@ -28,20 +27,22 @@ public class PlayerJoinListener implements Listener {
         String arenaName = arena.getName();
 
         if (arenas.contains(arenaName)){  // checks if its an arena
+            // if the arena is full your set as a spectator on rejoin
             if (this.plugin.playingMap.get(arenaName).size() > maxPlayers && this.plugin.gameStatusMap.get(arenaName).equals("starting")){
-                player.teleport(Bukkit.getWorlds().get(0).getSpawnLocation());
-                player.sendMessage(ChatColor.RED + "The arena '" + arenaName + "' you were in is full, join back as a spectator after it starts.");
+                this.plugin.playerMaps.addToSpectating(arenaName, player);
+                player.sendMessage(ChatColor.RED + "The arena '" + arenaName + "' you were in is full, you're now a spectator.");
                 return;
             }
 
-            // update map values
+            // if the game state is starting or stopped add you as a player
             if (this.plugin.gameStatusMap.get(player.getWorld().getName()).equals("stopped") ||
                     this.plugin.gameStatusMap.get(player.getWorld().getName()).equals("starting")){
-                this.plugin.changePlayerMaps.addPlayerToPlaying(arenaName, player);
+                this.plugin.playerMaps.addToPlaying(arenaName, player);
             }
 
+            // if the game state is now playing add you as a spectator
             if (this.plugin.gameStatusMap.get(player.getWorld().getName()).equals("playing")){
-                this.plugin.changePlayerMaps.addPlayerToSpectating(arenaName, player);
+                this.plugin.playerMaps.addToSpectating(arenaName, player);
             }
 
             // handles players joining during start phase

@@ -6,7 +6,10 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -18,20 +21,20 @@ public class GameEndTask {
             public void run() {
                 // show all players to you and you to them
                 for (Player p : plugin.playingMap.get(arena.getName())) {
-                    plugin.customSpectator.showAllPlayers(arena.getName(), p);
+                    plugin.spectator.showAllPlayersYouAndYouAllPlayers(arena.getName(), p);
                 }
                 for (Player p : plugin.spectatingMap.get(arena.getName())) {
-                    plugin.customSpectator.showAllPlayers(arena.getName(), p);
+                    plugin.spectator.showAllPlayersYouAndYouAllPlayers(arena.getName(), p);
                 }
 
                 // send the players back to the lobby and clear the maps holding player info
                 for (Player p : new ArrayList<>(plugin.playingMap.get(arena.getName()))) {
-                    plugin.changePlayerMaps.removePlayerFromPlaying(arena.getName(), p);
-                    p.teleport(Bukkit.getWorlds().get(0).getSpawnLocation());
+                    plugin.playerMaps.removeFromPlaying(arena.getName(), p);
+                    plugin.lobby.tp(p); // send player to lobby
                 }
                 for (Player p : new ArrayList<>(plugin.spectatingMap.get(arena.getName()))) {
-                    plugin.changePlayerMaps.removePlayerFromSpectating(arena.getName(), p);
-                    p.teleport(Bukkit.getWorlds().get(0).getSpawnLocation());
+                    plugin.playerMaps.removeFromSpectating(arena.getName(), p);
+                    plugin.lobby.tp(p);
                 }
 
                 // gets the rollback map and rolls the blocks back, then clears the map

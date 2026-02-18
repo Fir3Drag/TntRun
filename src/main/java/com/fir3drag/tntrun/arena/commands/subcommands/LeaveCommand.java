@@ -4,11 +4,12 @@ import com.fir3drag.tntrun.TntRun;
 import com.fir3drag.tntrun.arena.commands.interfaces.SubCommand;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.GameMode;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 
 import java.util.Collections;
 import java.util.List;
@@ -22,7 +23,7 @@ public class LeaveCommand implements SubCommand {
 
     @Override
     public void execute(CommandSender commandSender, Command command, String s, String[] args) {
-        if (!this.plugin.checkPerms.check(commandSender, "tntrun.leave")){
+        if (!this.plugin.perms.check(commandSender, "tntrun.leave")){
             return;
         }
 
@@ -35,11 +36,11 @@ public class LeaveCommand implements SubCommand {
 
             if (arenas.contains(arenaName)){  // only runs arena features if in an arena
                 // teleport first to prevent getting countdown canceled msgs
-                player.teleport(Bukkit.getWorlds().get(0).getSpawnLocation());
-                this.plugin.customSpectator.showAllPlayers(arenaName, player);
-                this.plugin.changePlayerMaps.removePlayerAll(arenaName, player);  // removes the player from the lists for the arena their in
+                this.plugin.lobby.tp(player);
+                this.plugin.spectator.showAllPlayersYouAndYouAllPlayers(arenaName, player);
+                this.plugin.playerMaps.removeAll(arenaName, player);  // removes the player from the lists for the arena their in
                 this.plugin.countdown.checkForCancel(arena);  // handles players leaving during start phase
-                this.plugin.checkForWinner.check(arena, player);   // handles players leaving during game
+                this.plugin.winner.checkForWinner(arena, player);   // handles players leaving during game
             }
             else {
                 player.sendMessage(ChatColor.RED + "You are not in an arena.");            }

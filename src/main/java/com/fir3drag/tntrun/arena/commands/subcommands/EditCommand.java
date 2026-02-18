@@ -4,7 +4,6 @@ import com.fir3drag.tntrun.TntRun;
 import com.fir3drag.tntrun.arena.commands.interfaces.SubCommand;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.GameMode;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -13,6 +12,7 @@ import org.bukkit.entity.Player;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 public class EditCommand implements SubCommand {
     private final TntRun plugin;
@@ -23,7 +23,7 @@ public class EditCommand implements SubCommand {
 
     @Override
     public void execute(CommandSender commandSender, Command command, String s, String[] args) {
-        if (!this.plugin.checkPerms.check(commandSender, "tntrun.edit")){
+        if (!this.plugin.perms.check(commandSender, "tntrun.edit")){
             return;
         }
         List<String> arenas = this.plugin.data.getDataConfig().getStringList("arenas");
@@ -61,14 +61,14 @@ public class EditCommand implements SubCommand {
                 }
 
                 if (arenas.contains(currentWorldName)) {  // checks if the player is already in an arena
-                    this.plugin.customSpectator.showAllPlayers(currentWorldName, player);
-                    this.plugin.changePlayerMaps.removePlayerAll(currentWorldName, player);
+                    this.plugin.spectator.showAllPlayersYouAndYouAllPlayers(currentWorldName, player);
+                    this.plugin.playerMaps.removeAll(currentWorldName, player);
                     this.plugin.countdown.checkForCancel(currentWorld);
-                    this.plugin.checkForWinner.check(currentWorld, player);
+                    this.plugin.winner.checkForWinner(currentWorld, player);
                 }
 
                 // setup for new arean
-                this.plugin.changePlayerMaps.addPlayerToEditing(arenaName, player);  // add to the new editing list of the arena their going to
+                this.plugin.playerMaps.addToEditing(arenaName, player);  // add to the new editing list of the arena their going to
                 player.teleport(arena.getSpawnLocation()); // moves player into arena
 
                 player.sendMessage(ChatColor.YELLOW + "Editing arena '" + arenaName + "'.");
@@ -94,7 +94,7 @@ public class EditCommand implements SubCommand {
             List<String> completions = new ArrayList<>();
 
             for (String completion: allCompletions){ // dynamically updates the tab list depending on whats written
-                if (completion.startsWith(args[0]))
+                if (completion.toLowerCase(Locale.ROOT).startsWith(args[0].toLowerCase(Locale.ROOT)))
                 {
                     completions.add(completion);
                 }

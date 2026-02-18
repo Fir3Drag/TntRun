@@ -24,11 +24,12 @@ public class CommandManager implements CommandExecutor, TabCompleter {
         subCommands.put("join", new JoinCommand(plugin));
         subCommands.put("leave", new LeaveCommand(plugin));
         subCommands.put("list", new ListCommand(plugin));
+        subCommands.put("spec", new SpecCommand(plugin));
     }
 
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] args) {
-        String errorMsg = ChatColor.RED + "/tntrun create | delete | disable | edit | enable | forceStart | join | leave | list";
+        String errorMsg = ChatColor.RED + "/tntrun create | delete | disable | edit | enable | forceStart | join | leave | list | spec";
 
         if (args.length == 0) {
             commandSender.sendMessage(errorMsg);
@@ -55,7 +56,7 @@ public class CommandManager implements CommandExecutor, TabCompleter {
     @Override
     public List<String> onTabComplete(CommandSender commandSender, Command command, String s, String[] args) {
         if (args.length == 1){
-            List<String> allCompletions = Arrays.asList("create", "delete", "disable", "edit", "enable", "forceStart", "join", "leave", "list");
+            List<String> allCompletions = Arrays.asList("create", "delete", "disable", "edit", "enable", "forceStart", "join", "leave", "list", "spec");
             List<String> completions = new ArrayList<>();
 
             for (String completion: allCompletions){ // dynamically updates the tab list depending on whats written

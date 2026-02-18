@@ -9,6 +9,7 @@ import org.bukkit.command.CommandSender;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 
 public class EnableCommand implements SubCommand {
     private final TntRun plugin;
@@ -19,7 +20,7 @@ public class EnableCommand implements SubCommand {
 
     @Override
     public void execute(CommandSender commandSender, Command command, String s, String[] args) {
-        if (!this.plugin.checkPerms.check(commandSender, "tntrun.enable")){
+        if (!this.plugin.perms.check(commandSender, "tntrun.enable")){
             return;
         }
 
@@ -53,7 +54,7 @@ public class EnableCommand implements SubCommand {
             List<String> completions = new ArrayList<>();
 
             for (String completion: allCompletions){ // dynamically updates the tab list depending on whats written
-                if (completion.startsWith(args[0]))
+                if (completion.toLowerCase(Locale.ROOT).startsWith(args[0].toLowerCase(Locale.ROOT)))
                 {
                     completions.add(completion);
                 }

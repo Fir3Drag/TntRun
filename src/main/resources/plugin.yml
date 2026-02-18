@@ -44,6 +44,10 @@ commands:
         description: Allows a player to list TntRun arenas
         permission: tntrun.list
         permission-message: "You don't have permission to list TntRun arenas."
+      spec:
+        description: Allows a player to spec other players in TntRun arenas
+        permission: tntrun.spec
+        permission-message: "You don't have permission to spec other players in TntRun arenas."
 
 permissions:
   tntrun.admin:
@@ -76,3 +80,6 @@ permissions:
   tntrun.list:
     description: Allows the player to list the arenas
     default: op
+  tntrun.spec:
+    description: Allows the player to list the arenas
+    default: true

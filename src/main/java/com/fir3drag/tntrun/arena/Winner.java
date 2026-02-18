@@ -6,14 +6,14 @@ import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 
-public class CheckForWinner {
+public class Winner {
     private final TntRun plugin;
 
-    public CheckForWinner(TntRun plugin) {
+    public Winner(TntRun plugin) {
         this.plugin = plugin;
     }
 
-    public void check(World arena, Player player){  // checks if the game is over
+    public void checkForWinner(World arena, Player player){  // checks if the game is over
         String arenaName = arena.getName();
 
         if (this.plugin.gameStatusMap.get(arenaName).equals("playing")) {

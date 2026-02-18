@@ -4,29 +4,25 @@ import com.fir3drag.tntrun.TntRun;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 
-public class CustomSpectator {
+public class Spectator {
     private final TntRun plugin;
 
-    public CustomSpectator(TntRun plugin) {
+    public Spectator(TntRun plugin) {
         this.plugin = plugin;
     }
 
     // hide this player from all "playing" players, show spectators to this player
     public void setSpectator(String arenaName, Player player){  // custom spectator
-        if (player.getGameMode() != GameMode.CREATIVE && player.getGameMode() != GameMode.SPECTATOR){
-            player.setAllowFlight(true);
-            hideYouFromPlayers(arenaName, player);
-            showSpectators(arenaName, player);
-        }
+        player.setAllowFlight(true);
+        hideYouFromPlayers(arenaName, player);
+        showSpectators(arenaName, player);
     }
 
     // show this player to all and show all to this player
-    public void showAllPlayers(String arenaName, Player player){
-        if (player.getGameMode() != GameMode.CREATIVE && player.getGameMode() != GameMode.SPECTATOR){
-            player.setAllowFlight(false);
-            showPlayersYou(arenaName, player);
-            showSpectators(arenaName, player);
-        }
+    public void showAllPlayersYouAndYouAllPlayers(String arenaName, Player player){
+        player.setAllowFlight(false);
+        showPlayersYou(arenaName, player);
+        showSpectators(arenaName, player);
     }
 
     public void showSpectators(String arenaName, Player player){

@@ -10,6 +10,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 public class CountdownTask {
     private final TntRun plugin;
     private final World arena;
+    private final String arenaName;
 
     private BukkitRunnable countdownTask;
     private int countdownTime;
@@ -18,6 +19,7 @@ public class CountdownTask {
     public CountdownTask(TntRun plugin, World arena) {
         this.plugin = plugin;
         this.arena = arena;
+        this.arenaName = arena.getName();
     }
 
     public void sendTitle(Player player, String title, String subTitle){
@@ -29,8 +31,6 @@ public class CountdownTask {
         int halfCountdown = this.plugin.data.getTntRunConfig().getInt("halfCountdown");
         int quarterCountdown = this.plugin.data.getTntRunConfig().getInt("quarterCountdown");
         int gracePeriod = this.plugin.data.getTntRunConfig().getInt("gracePeriod");
-
-        String arenaName = arena.getName();
 
         if (isCounting) {
             return;
@@ -52,21 +52,32 @@ public class CountdownTask {
                     this.cancel();
                 }
                 else if (countdownTime == 0){  // end of countdown
-                    for (Player p: plugin.playingMap.get(arenaName)){
+                    for (Player p: plugin.playingMap.get(arenaName)){ // msg players
                         p.sendMessage(ChatColor.YELLOW + "Go!");
                         sendTitle(p, "Go!", "");
                         p.teleport(arena.getSpawnLocation());
                     }
+                    for (Player p: plugin.spectatingMap.get(arenaName)){ // msg spectators
+                        p.sendMessage(ChatColor.YELLOW + "Go!");
+                        sendTitle(p, "Go!", "");
+                    }
                 }
                 else if (countdownTime > 0) {  // displays the time to the players
-                    for (Player p: plugin.playingMap.get(arenaName)){
+                    for (Player p: plugin.playingMap.get(arenaName)){  // msg players starting info
                         if (countdownTime <= quarterCountdown || countdownTime == halfCountdown || countdownTime == fullCountdown){
                             p.sendMessage(ChatColor.YELLOW + "Starting in " + countdownTime + " seconds.");
                         }
                         if (countdownTime <= 5) {
                             sendTitle(p, String.valueOf(countdownTime), "");
                         }
-
+                    }
+                    for (Player p: plugin.spectatingMap.get(arenaName)){  // msg spectators starting info
+                        if (countdownTime <= quarterCountdown || countdownTime == halfCountdown || countdownTime == fullCountdown){
+                            p.sendMessage(ChatColor.YELLOW + "Starting in " + countdownTime + " seconds.");
+                        }
+                        if (countdownTime <= 5) {
+                            sendTitle(p, String.valueOf(countdownTime), "");
+                        }
                     }
                 }
                 countdownTime--;
@@ -79,10 +90,13 @@ public class CountdownTask {
         if (countdownTask != null && isCounting){
             countdownTask.cancel();
             isCounting = false;
-            plugin.gameStatusMap.replace(arena.getName(), "stopped");
+            plugin.gameStatusMap.replace(arenaName, "stopped");
         }
 
-        for (Player p: arena.getPlayers()){
+        for (Player p: this.plugin.playingMap.get(arenaName)){  // msg players
+            p.sendMessage(ChatColor.YELLOW + "Countdown canceled.");
+        }
+        for (Player p: this.plugin.spectatingMap.get(arenaName)){ // msg spectators
             p.sendMessage(ChatColor.YELLOW + "Countdown canceled.");
         }
     }

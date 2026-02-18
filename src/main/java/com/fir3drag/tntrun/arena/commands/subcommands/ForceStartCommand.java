@@ -3,7 +3,6 @@ package com.fir3drag.tntrun.arena.commands.subcommands;
 import com.fir3drag.tntrun.TntRun;
 import com.fir3drag.tntrun.arena.commands.interfaces.SubCommand;
 import org.bukkit.ChatColor;
-import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -20,7 +19,7 @@ public class ForceStartCommand implements SubCommand {
 
     @Override
     public void execute(CommandSender commandSender, Command command, String s, String[] args) {
-        if (!this.plugin.checkPerms.check(commandSender, "tntrun.forceStart")){
+        if (!this.plugin.perms.check(commandSender, "tntrun.forceStart")){
             return;
         }
 

@@ -30,19 +30,21 @@ public class PlayerMoveListener implements Listener {
         if (arenas.contains(arenaName)){ // checks your in an arena
             if (this.plugin.playingMap.get(arenaName).contains(player) && this.plugin.gameStatusMap.get(arenaName).equals("playing") &&
                     player.getLocation().getBlockY() < deathYLevel){ // check if you are playing and have fallen off
-                for (Player p: this.plugin.playingMap.get(arenaName)){ // msgs all players in the world
+                for (Player p: this.plugin.playingMap.get(arenaName)){ // msgs all players
                     p.sendMessage(player.getDisplayName() + " has died.");
                 }
-                this.plugin.changePlayerMaps.removePlayerFromPlaying(arenaName, player);
-                this.plugin.changePlayerMaps.addPlayerToSpectating(arenaName, player);
-                this.plugin.checkForWinner.check(arena, player);
+                for (Player p: this.plugin.spectatingMap.get(arenaName)){ // msgs all spectators
+                    p.sendMessage(player.getDisplayName() + " has died.");
+                }
+                this.plugin.playerMaps.removeFromPlaying(arenaName, player);
+                this.plugin.playerMaps.addToSpectating(arenaName, player);
+                this.plugin.winner.checkForWinner(arena, player);
             }
         }
 
         // handles players in void to tp them to world spawn
-        if (arenas.contains(arenaName)){  // player in arena
-            if (this.plugin.spectatingMap.get(arenaName).contains(player) || this.plugin.playingMap.get(arenaName).contains(player)
-                    && player.getLocation().getBlockY() < voidYLevel){  // checks they are in the void
+        if (arenas.contains(arenaName) && player.getLocation().getBlockY() < voidYLevel){  // player in arena
+            if (this.plugin.spectatingMap.get(arenaName).contains(player) || this.plugin.playingMap.get(arenaName).contains(player)){  // checks they are in the void
                 player.teleport(player.getWorld().getSpawnLocation()); // teleports them to world spawn
             }
         }

@@ -6,14 +6,14 @@ import org.bukkit.entity.Player;
 
 import java.util.List;
 
-public class ChangePlayerMaps {
+public class PlayerMaps {
     private final TntRun plugin;
 
-    public ChangePlayerMaps(TntRun plugin) {
+    public PlayerMaps(TntRun plugin) {
         this.plugin = plugin;
     }
 
-    public void addPlayerToPlaying(String arenaName, Player player){
+    public void addToPlaying(String arenaName, Player player){
         List<Player> playerList = this.plugin.playingMap.get(arenaName);
 
         if (!playerList.contains(player)){  // prevent duplicates in the list
@@ -22,17 +22,17 @@ public class ChangePlayerMaps {
         this.plugin.playingMap.replace(arenaName, playerList);  // allows the player to edit the world
     }
 
-    public void addPlayerToSpectating(String arenaName, Player player){
+    public void addToSpectating(String arenaName, Player player){
         List<Player> spectatingList = this.plugin.spectatingMap.get(arenaName);
 
         if (!spectatingList.contains(player)){  // prevent duplicates in the list
             spectatingList.add(player);
         }
         this.plugin.spectatingMap.replace(arenaName, spectatingList);  // allows the player to edit the world
-        this.plugin.customSpectator.setSpectator(arenaName, player);
+        this.plugin.spectator.setSpectator(arenaName, player);
     }
 
-    public void addPlayerToEditing(String arenaName, Player player){
+    public void addToEditing(String arenaName, Player player){
         List<Player> editingList = this.plugin.editingMap.get(arenaName);
 
         if (!editingList.contains(player)){  // prevent duplicates in the list
@@ -42,21 +42,21 @@ public class ChangePlayerMaps {
         this.plugin.editingMap.replace(arenaName, editingList);  // allows the player to edit the world
     }
 
-    public void removePlayerFromPlaying(String arenaName, Player player){
+    public void removeFromPlaying(String arenaName, Player player){
         // remove the player from current playingList list
         List<Player> playingList = this.plugin.playingMap.get(arenaName);
         playingList.remove(player);
         this.plugin.playingMap.replace(arenaName, playingList);
     }
 
-    public void removePlayerFromSpectating(String arenaName, Player player){
+    public void removeFromSpectating(String arenaName, Player player){
         // remove the player from current spectating list
         List<Player> spectatingList = this.plugin.spectatingMap.get(arenaName);
         spectatingList.remove(player);
         this.plugin.spectatingMap.replace(arenaName, spectatingList);
     }
 
-    public void removePlayerFromEditing(String arenaName, Player player){
+    public void removeFromEditing(String arenaName, Player player){
         // remove the player from the current world editing list
         List<Player> editingList = this.plugin.editingMap.get(arenaName);
 
@@ -67,9 +67,9 @@ public class ChangePlayerMaps {
         this.plugin.editingMap.replace(arenaName, editingList);
     }
 
-    public void removePlayerAll(String arenaName, Player player){
-        removePlayerFromPlaying(arenaName, player);
-        removePlayerFromSpectating(arenaName, player);
-        removePlayerFromEditing(arenaName, player);
+    public void removeAll(String arenaName, Player player){
+        removeFromPlaying(arenaName, player);
+        removeFromSpectating(arenaName, player);
+        removeFromEditing(arenaName, player);
     }
 }

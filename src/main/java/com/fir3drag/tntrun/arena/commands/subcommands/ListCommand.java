@@ -18,7 +18,7 @@ public class ListCommand implements SubCommand {
 
     @Override
     public void execute(CommandSender commandSender, Command command, String s, String[] args) {
-        if (!this.plugin.checkPerms.check(commandSender, "tntrun.list")){
+        if (!this.plugin.perms.check(commandSender, "tntrun.list")){
             return;
         }
         commandSender.sendMessage(ChatColor.YELLOW + "Arenas: " + this.plugin.data.getDataConfig().getStringList("arenas"));

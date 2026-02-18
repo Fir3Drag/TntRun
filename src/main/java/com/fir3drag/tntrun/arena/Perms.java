@@ -3,7 +3,7 @@ package com.fir3drag.tntrun.arena;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 
-public class CheckPerms {
+public class Perms {
     public boolean check(CommandSender sender, String perm){
         if (!sender.hasPermission(perm) && !sender.hasPermission("tntrun.admin")){
             sender.sendMessage(ChatColor.RED + "You don't have permission to use this command.");

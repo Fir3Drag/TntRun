@@ -9,10 +9,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 public class DisableCommand implements SubCommand {
     private final TntRun plugin;
@@ -23,7 +20,7 @@ public class DisableCommand implements SubCommand {
 
     @Override
     public void execute(CommandSender commandSender, Command command, String s, String[] args) {
-        if (!this.plugin.checkPerms.check(commandSender, "tntrun.disable")){
+        if (!this.plugin.perms.check(commandSender, "tntrun.disable")){
             return;
         }
 
@@ -57,7 +54,7 @@ public class DisableCommand implements SubCommand {
                 Bukkit.broadcastMessage(p.toString());
                 p.sendMessage(ChatColor.RED + "Arena has been disabled.");
                 p.teleport(Bukkit.getWorlds().get(0).getSpawnLocation());
-                this.plugin.changePlayerMaps.removePlayerAll(arenaName, p);
+                this.plugin.playerMaps.removeAll(arenaName, p);
             }
             this.plugin.countdownMap.get(arenaName).cancelCountdown();
         }
@@ -79,7 +76,7 @@ public class DisableCommand implements SubCommand {
             }
 
             for (String completion: allCompletions){ // dynamically updates the tab list depending on whats written
-                if (completion.startsWith(args[0]))
+                if (completion.toLowerCase(Locale.ROOT).startsWith(args[0].toLowerCase(Locale.ROOT)))
                 {
                     completions.add(completion);
                 }

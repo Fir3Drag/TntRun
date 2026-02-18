@@ -3,7 +3,6 @@ package com.fir3drag.tntrun.arena.commands.subcommands;
 import com.fir3drag.tntrun.TntRun;
 import com.fir3drag.tntrun.arena.VoidWorldGenerator;
 import com.fir3drag.tntrun.arena.commands.interfaces.SubCommand;
-import com.fir3drag.tntrun.arena.tasks.CountdownTask;
 import org.bukkit.*;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -20,7 +19,7 @@ public class CreateCommand implements SubCommand {
 
     @Override
     public void execute(CommandSender commandSender, Command command, String s, String[] args) {
-        if (!this.plugin.checkPerms.check(commandSender, "tntrun.create")){
+        if (!this.plugin.perms.check(commandSender, "tntrun.create")){
             return;
         }
 
@@ -59,12 +58,7 @@ public class CreateCommand implements SubCommand {
             this.plugin.data.saveConfig();
 
             // update map values
-            this.plugin.playingMap.put(arena.getName(), new ArrayList<>());
-            this.plugin.spectatingMap.put(arena.getName(), new ArrayList<>());
-            this.plugin.editingMap.put(arena.getName(), new ArrayList<>());
-            this.plugin.gameStatusMap.put(arena.getName(), "stopped");
-            this.plugin.countdownMap.put(arena.getName(), new CountdownTask(plugin, arena));
-            this.plugin.rollbackMap.put(arena.getName(), new HashMap<>());
+            this.plugin.loadDefaultArenaValues(arena);
 
             commandSender.sendMessage(ChatColor.YELLOW + "Successfully created arena: '" + arenaName + "'.");
             commandSender.sendMessage(ChatColor.YELLOW + "Arena is disabled for editing. use /tntrun enable " + arenaName +
@@ -73,7 +67,7 @@ public class CreateCommand implements SubCommand {
             if (commandSender instanceof Player){
                 Player player = (Player) commandSender;
 
-                this.plugin.changePlayerMaps.addPlayerToEditing(arena.getName(), player);
+                this.plugin.playerMaps.addToEditing(arena.getName(), player);
                 player.teleport(arena.getSpawnLocation());
                 player.setGameMode(GameMode.CREATIVE);
                 commandSender.sendMessage(ChatColor.YELLOW + "Type /tntrun leave to return to main world.");

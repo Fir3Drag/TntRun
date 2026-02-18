@@ -24,10 +24,10 @@ public class PlayerQuitListener implements Listener {
         String arenaName = arena.getName();
 
         if (arenas.contains(arenaName)){  // checks if its an arena and handles players leaving during start phase
-            this.plugin.customSpectator.showAllPlayers(arenaName, player);
-            this.plugin.changePlayerMaps.removePlayerAll(arenaName, player);
+            this.plugin.spectator.showAllPlayersYouAndYouAllPlayers(arenaName, player);
+            this.plugin.playerMaps.removeAll(arenaName, player);
             this.plugin.countdown.checkForCancel(arena);
-            this.plugin.checkForWinner.check(arena, player);
+            this.plugin.winner.checkForWinner(arena, player);
         }
     }
 }

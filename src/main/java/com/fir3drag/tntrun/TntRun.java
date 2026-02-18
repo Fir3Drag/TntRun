@@ -20,11 +20,13 @@ public final class TntRun extends JavaPlugin {
     public TntRun plugin;
     public DataManager data;
 
-    public ChangePlayerMaps changePlayerMaps;
-    public CheckPerms checkPerms;
-    public CustomSpectator customSpectator;
-    public CheckForWinner checkForWinner;
     public Countdown countdown;
+    public Lobby lobby;
+    public Perms perms;
+    public PlayerMaps playerMaps;
+    public Spectator spectator;
+    public Winner winner;
+
     public BlockRemoverTask blockRemoverTask;
 
     public Map<String, List<Player>> playingMap = new HashMap<>();
@@ -34,21 +36,27 @@ public final class TntRun extends JavaPlugin {
     public Map<String, CountdownTask> countdownMap = new HashMap<>();
     public Map<String, Map<Block, Material>> rollbackMap = new HashMap<>();
 
-    public void loadWorlds(){
-        for (String worldName: data.getDataConfig().getStringList("arenas")) {  // load in the worlds
-            World world = Bukkit.getWorld(worldName);
+    public void loadDefaultArenaValues(World arena){
+        String arenaName = arena.getName();
 
-            if (world == null) {
-                new WorldCreator(worldName).createWorld();
-                world = Bukkit.getWorld(worldName);
+        this.plugin.playingMap.put(arenaName, new ArrayList<>());
+        this.plugin.spectatingMap.put(arenaName, new ArrayList<>());
+        this.plugin.editingMap.put(arenaName, new ArrayList<>());
+        this.plugin.gameStatusMap.put(arenaName, "stopped");
+        this.plugin.countdownMap.put(arenaName, new CountdownTask(plugin, arena));
+        this.plugin.rollbackMap.put(arenaName, new HashMap<>());
+    }
+
+    public void loadWorlds(){
+        for (String arenaName: data.getDataConfig().getStringList("arenas")) {  // load in the worlds
+            World arena = Bukkit.getWorld(arenaName);
+
+            if (arena == null) {
+                new WorldCreator(arenaName).createWorld();
+                arena = Bukkit.getWorld(arenaName);
             }
-            if (world != null){  // check the world exists
-                this.plugin.playingMap.put(worldName, new ArrayList<>());
-                this.plugin.spectatingMap.put(worldName, new ArrayList<>());
-                this.plugin.editingMap.put(worldName, new ArrayList<>());
-                this.plugin.gameStatusMap.put(worldName, "stopped");
-                this.plugin.countdownMap.put(worldName, new CountdownTask(plugin, world));
-                this.plugin.rollbackMap.put(worldName, new HashMap<>());
+            if (arena != null){  // check the world exists
+                loadDefaultArenaValues(arena);
             }
         }
     }
@@ -61,10 +69,10 @@ public final class TntRun extends JavaPlugin {
     TODO maybe put a confirm on the delete command
     TODO could put all arenas in a single world (too many worlds might look confusing in the server folder) -> require setting positions to protect and stuff like that needing a /tr pos1 /tr pos2
 
-    TODO make a /tr spec command instead of /tr join
+    TODO footstep bugging noise died of fall dmg when u go lobby maybe remove y velocity
     TODO test concurrent games
 
-    TODO spectating config:
+    TODO spectating config: (concerned that u might be able to body block as a spec)
     have night vision: true
     can see other spectators: true (might make this player decided with a custom item)
      */
@@ -77,12 +85,15 @@ public final class TntRun extends JavaPlugin {
         plugin = this;
         data = new DataManager(this);
 
-        changePlayerMaps = new ChangePlayerMaps(this);
-        checkPerms = new CheckPerms();
-        customSpectator = new CustomSpectator(this);
-        checkForWinner = new CheckForWinner(this);
         countdown = new Countdown(this);
+        lobby = new Lobby(this);
+        perms = new Perms();
+        playerMaps = new PlayerMaps(this);
+        spectator = new Spectator(this);
+        winner = new Winner(this);
+
         blockRemoverTask = new BlockRemoverTask(this);
+
         loadWorlds();
 
         // commands
