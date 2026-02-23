@@ -1,22 +1,22 @@
 package com.fir3drag.tntrun.arena.tasks;
 
 import com.fir3drag.tntrun.TntRun;
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
-public class CountdownTask {
+public class StartingCountdownTask {
     private final TntRun plugin;
     private final World arena;
     private final String arenaName;
 
     private BukkitRunnable countdownTask;
-    private int countdownTime;
+    private int countdownTime = -1;
     private boolean isCounting = false;
+    private boolean gracePeriodOver = false;
 
-    public CountdownTask(TntRun plugin, World arena) {
+    public StartingCountdownTask(TntRun plugin, World arena) {
         this.plugin = plugin;
         this.arena = arena;
         this.arenaName = arena.getName();
@@ -36,6 +36,7 @@ public class CountdownTask {
             return;
         }
         isCounting = true;
+        gracePeriodOver = false;
         countdownTime = fullCountdown;
         plugin.gameStatusMap.replace(arenaName, "starting");
 
@@ -43,7 +44,7 @@ public class CountdownTask {
             @Override
             public void run() {
                 if (countdownTime <= -gracePeriod) {  // 3s grace period
-                    plugin.gameStatusMap.replace(arenaName, "playing");
+                    gracePeriodOver = true;
                     isCounting = false;
 
                     for (Player p: plugin.playingMap.get(arenaName)){  // triggers the move event so that they can't stand still at the start
@@ -51,15 +52,21 @@ public class CountdownTask {
                     }
                     this.cancel();
                 }
-                else if (countdownTime == 0){  // end of countdown
+                else if (countdownTime == 0){
+                    plugin.gameStatusMap.replace(arenaName, "playing");
+                    plugin.playingCountUpMap.get(arenaName).startCountdown();
+
                     for (Player p: plugin.playingMap.get(arenaName)){ // msg players
                         p.sendMessage(ChatColor.YELLOW + "Go!");
                         sendTitle(p, "Go!", "");
+                        plugin.scoreboardMap.get(p).refresh(arenaName);
                         p.teleport(arena.getSpawnLocation());
                     }
                     for (Player p: plugin.spectatingMap.get(arenaName)){ // msg spectators
                         p.sendMessage(ChatColor.YELLOW + "Go!");
                         sendTitle(p, "Go!", "");
+                        plugin.scoreboardMap.get(p).refresh(arenaName);
+                        p.teleport(arena.getSpawnLocation());
                     }
                 }
                 else if (countdownTime > 0) {  // displays the time to the players
@@ -70,6 +77,8 @@ public class CountdownTask {
                         if (countdownTime <= 5) {
                             sendTitle(p, String.valueOf(countdownTime), "");
                         }
+                        plugin.scoreboardMap.get(p).refresh(arenaName);
+
                     }
                     for (Player p: plugin.spectatingMap.get(arenaName)){  // msg spectators starting info
                         if (countdownTime <= quarterCountdown || countdownTime == halfCountdown || countdownTime == fullCountdown){
@@ -78,6 +87,7 @@ public class CountdownTask {
                         if (countdownTime <= 5) {
                             sendTitle(p, String.valueOf(countdownTime), "");
                         }
+                        plugin.scoreboardMap.get(p).refresh(arenaName);
                     }
                 }
                 countdownTime--;
@@ -90,28 +100,44 @@ public class CountdownTask {
         if (countdownTask != null && isCounting){
             countdownTask.cancel();
             isCounting = false;
+            gracePeriodOver = false;
             plugin.gameStatusMap.replace(arenaName, "stopped");
         }
 
         for (Player p: this.plugin.playingMap.get(arenaName)){  // msg players
             p.sendMessage(ChatColor.YELLOW + "Countdown canceled.");
+            plugin.scoreboardMap.get(p).refresh(arenaName);
         }
         for (Player p: this.plugin.spectatingMap.get(arenaName)){ // msg spectators
             p.sendMessage(ChatColor.YELLOW + "Countdown canceled.");
+            plugin.scoreboardMap.get(p).refresh(arenaName);
         }
     }
 
     public void modifyCountdown(Integer newTime) {
         if (isCounting) {
             countdownTime = newTime;
+
+            // updates the player scoreboard instantly to the new value
+            for (Player p: this.plugin.playingMap.get(arenaName)){
+                plugin.scoreboardMap.get(p).refresh(arenaName);
+            }
+            for (Player p: this.plugin.spectatingMap.get(arenaName)){
+                plugin.scoreboardMap.get(p).refresh(arenaName);
+            }
+
         }
     }
 
-    public long getCountdownTime(){
+    public int getCountdownTime(){
         return countdownTime;
     }
 
     public boolean isCounting() {
         return isCounting;
+    }
+
+    public boolean isGracePeriodOver(){
+        return gracePeriodOver;
     }
 }

@@ -20,7 +20,7 @@ setFullHunger: true
 
 # playing
 gracePeriod: 2  # after Go! how long before blocks start disappearing
-tntRemoveDelay: 8  # ticks
+tntRemoveDelay: 10  # ticks
 playerDeathYLevel: 0
 voidYLevel: -20  # needs to be less than playerDeathYLevel (will tp players back to world spawn if they fall below this y level)
 

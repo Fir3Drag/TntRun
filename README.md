@@ -3,7 +3,7 @@
 A minecraft plugin to play TntRun.
 
 ## System requirements
-- Works on 1.8-1.8.9 spigot/paper server.
+- Works on 1.8.8-1.8.9 spigot/paper server.
 - Doesn't work with bungeecord.
 
 ## Main features

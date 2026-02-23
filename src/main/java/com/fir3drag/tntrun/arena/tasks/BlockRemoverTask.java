@@ -117,7 +117,7 @@ public class BlockRemoverTask {
 
         // checks the player is in an arena and is playing the game
         if (arenas.contains(arenaName) && this.plugin.playingMap.get(arenaName).contains(player)){
-            if (this.plugin.gameStatusMap.get(arenaName).equals("playing")){  // checks the game has started
+            if (this.plugin.gameStatusMap.get(arenaName).equals("playing") && this.plugin.startingCountdownMap.get(arenaName).isGracePeriodOver()){  // checks the game has started
                 Block blockUnderPlayer = player.getLocation().subtract(0, 1, 0).getBlock();
                 Block secondBlockUnderPlayer = player.getLocation().subtract(0, 2, 0).getBlock();
 

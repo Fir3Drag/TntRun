@@ -38,8 +38,8 @@ public class DeleteCommand implements SubCommand {
     }
 
     @Override
-    public void execute(CommandSender commandSender, Command command, String s, String[] args) {
-        if (!this.plugin.perms.check(commandSender, "tntrun.delete")){
+    public void onCommand(CommandSender commandSender, Command command, String s, String[] args) {
+        if (!this.plugin.permController.check(commandSender, "tntrun.delete")){
             return;
         }
 
@@ -59,19 +59,19 @@ public class DeleteCommand implements SubCommand {
                 commandSender.sendMessage(ChatColor.RED + "Arena '" + arenaName + "' does not exist.");
                 return;
             }
-            // show all players to you and you to them
+
             for (Player p : plugin.playingMap.get(arenaName)) {
-                plugin.spectator.showAllPlayersYouAndYouAllPlayers(arenaName, p);
+                plugin.playerMapsController.removeFromPlaying(arenaName, p);
             }
             for (Player p : plugin.spectatingMap.get(arenaName)) {
-                plugin.spectator.showAllPlayersYouAndYouAllPlayers(arenaName, p);
+                plugin.playerMapsController.removeFromSpectating(arenaName, p);  // show all players to you and you to them
             }
 
             for (Player p: arena.getPlayers()){  // if players in the world send them to default world
                 p.teleport(Bukkit.getWorlds().get(0).getSpawnLocation());
             }
             // cancel any countdown
-            this.plugin.countdownMap.get(arenaName).cancelCountdown();
+            this.plugin.startingCountdownMap.get(arenaName).cancelCountdown();
 
             // updates configs
             arenas.remove(arenaName);
@@ -80,13 +80,7 @@ public class DeleteCommand implements SubCommand {
             this.plugin.data.getDataConfig().set("disabledArenas", disabledArenas);
             this.plugin.data.saveConfig();
 
-            // update map values
-            this.plugin.playingMap.remove(arenaName);
-            this.plugin.spectatingMap.remove(arenaName);
-            this.plugin.editingMap.remove(arenaName);
-            this.plugin.gameStatusMap.remove(arenaName);
-            this.plugin.countdownMap.remove(arenaName);
-            this.plugin.rollbackMap.remove(arenaName);
+            this.plugin.removeDefaultArenaValues(arenaName);  // update map values
 
             // unloads and deletes world files
             Bukkit.unloadWorld(arenaName, false);
@@ -100,7 +94,7 @@ public class DeleteCommand implements SubCommand {
     }
 
     @Override
-    public List<String> tabComplete(CommandSender commandSender, Command command, String s, String[] args) {
+    public List<String> onTabComplete(CommandSender commandSender, Command command, String s, String[] args) {
         if (args.length == 1){
             List<String> allCompletions = this.plugin.data.getDataConfig().getStringList("arenas");
             List<String> completions = new ArrayList<>();

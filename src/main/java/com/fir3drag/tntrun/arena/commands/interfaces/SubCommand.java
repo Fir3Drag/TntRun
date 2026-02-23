@@ -6,6 +6,6 @@ import org.bukkit.command.CommandSender;
 import java.util.List;
 
 public interface SubCommand {
-    void execute(CommandSender commandSender, Command command, String s, String[] args);
-    List<String> tabComplete(CommandSender commandSender, Command command, String s, String[] args);
+    void onCommand(CommandSender commandSender, Command command, String s, String[] args);
+    List<String> onTabComplete(CommandSender commandSender, Command command, String s, String[] args);
 }

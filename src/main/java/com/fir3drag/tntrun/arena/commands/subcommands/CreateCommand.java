@@ -18,8 +18,8 @@ public class CreateCommand implements SubCommand {
     }
 
     @Override
-    public void execute(CommandSender commandSender, Command command, String s, String[] args) {
-        if (!this.plugin.perms.check(commandSender, "tntrun.create")){
+    public void onCommand(CommandSender commandSender, Command command, String s, String[] args) {
+        if (!this.plugin.permController.check(commandSender, "tntrun.create")){
             return;
         }
 
@@ -31,6 +31,11 @@ public class CreateCommand implements SubCommand {
             return;
         }
         String arenaName = args[0];
+
+        if (args[0].equalsIgnoreCase("lobby")){
+            commandSender.sendMessage(ChatColor.RED + "You cannot name an arena 'lobby'.");
+            return;
+        }
 
         if (!Bukkit.getWorlds().toString().contains(arenaName) && !arenas.contains(arenaName)){ // create world if it doesn't exist
             WorldCreator creator = new WorldCreator(arenaName);
@@ -67,10 +72,10 @@ public class CreateCommand implements SubCommand {
             if (commandSender instanceof Player){
                 Player player = (Player) commandSender;
 
-                this.plugin.playerMaps.addToEditing(arena.getName(), player);
+                this.plugin.playerMapsController.addToEditing(arena.getName(), player);
                 player.teleport(arena.getSpawnLocation());
                 player.setGameMode(GameMode.CREATIVE);
-                commandSender.sendMessage(ChatColor.YELLOW + "Type /tntrun leave to return to main world.");
+                commandSender.sendMessage(ChatColor.YELLOW + "Type /leave to return to main world.");
             }
         }
         else {
@@ -79,7 +84,7 @@ public class CreateCommand implements SubCommand {
     }
 
     @Override
-    public List<String> tabComplete(CommandSender commandSender, Command command, String s, String[] args) {
+    public List<String> onTabComplete(CommandSender commandSender, Command command, String s, String[] args) {
         return Collections.emptyList();
     }
 }

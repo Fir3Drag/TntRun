@@ -28,26 +28,32 @@ commands:
         description: Enables a TntRun arena
         permission: tntrun.enable
         permission-message: "You don't have permission to enable TntRun arenas."
-      forceStart:
-        description: Reduces the start time to 10s
-        permission: tntrun.forceStart
-        permission-message: "You don't have permission to force start TntRun arenas."
       join:
         description: Allows a player to join a TntRun arena
         permission: tntrun.join
         permission-message: "You don't have permission to join TntRun arenas."
-      leave:
-        description: Allows a player to leave TntRun arenas
-        permission: tntrun.leave
-        permission-message: "You don't have permission to leave TntRun arenas."
       list:
         description: Allows a player to list TntRun arenas
         permission: tntrun.list
         permission-message: "You don't have permission to list TntRun arenas."
-      spec:
-        description: Allows a player to spec other players in TntRun arenas
-        permission: tntrun.spec
-        permission-message: "You don't have permission to spec other players in TntRun arenas."
+  forceStart:
+    description: Allows operators to force an arena to start playing
+    usage: /<command>
+    aliases: [fs]
+    permission: tntrun.forceStart
+    permission-message: "You don't have permission to force start TntRun arenas."
+  leave:
+    description: Allows a player to leave TntRun arenas
+    usage: /<command> [optional player name]
+    aliases: [l, hub]
+    permission: tntrun.leave
+    permission-message: "You don't have permission to leave TntRun arenas."
+  spectate:
+    description: Allows a player to spec other players in TntRun arenas
+    usage: /<command> [player]
+    aliases: [s, spec]
+    permission: tntrun.spectate
+    permission-message: "You don't have permission to spectate other players in TntRun arenas."
 
 permissions:
   tntrun.admin:
@@ -80,6 +86,6 @@ permissions:
   tntrun.list:
     description: Allows the player to list the arenas
     default: op
-  tntrun.spec:
+  tntrun.spectate:
     description: Allows the player to list the arenas
     default: true

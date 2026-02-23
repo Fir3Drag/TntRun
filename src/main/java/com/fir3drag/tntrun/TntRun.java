@@ -1,10 +1,14 @@
 package com.fir3drag.tntrun;
 
-import com.fir3drag.tntrun.arena.*;
 import com.fir3drag.tntrun.arena.commands.CommandManager;
+import com.fir3drag.tntrun.arena.commands.ForceStartCommand;
+import com.fir3drag.tntrun.arena.commands.LeaveCommand;
+import com.fir3drag.tntrun.arena.commands.SpectateCommand;
+import com.fir3drag.tntrun.arena.controllers.*;
 import com.fir3drag.tntrun.arena.listeners.*;
 import com.fir3drag.tntrun.arena.tasks.BlockRemoverTask;
-import com.fir3drag.tntrun.arena.tasks.CountdownTask;
+import com.fir3drag.tntrun.arena.tasks.PlayingCountUpTask;
+import com.fir3drag.tntrun.arena.tasks.StartingCountdownTask;
 import com.fir3drag.tntrun.configuration.DataManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
@@ -20,34 +24,49 @@ public final class TntRun extends JavaPlugin {
     public TntRun plugin;
     public DataManager data;
 
-    public Countdown countdown;
-    public Lobby lobby;
-    public Perms perms;
-    public PlayerMaps playerMaps;
-    public Spectator spectator;
-    public Winner winner;
+    public CountdownController countdownController;
+    public LobbyController lobbyController;
+    public PermController permController;
+    public PlayerMapsController playerMapsController;
+    public SpectatorController spectatorController;
+    public WinController winController;
 
     public BlockRemoverTask blockRemoverTask;
+
+    public List<Player> lobbyEditList = new ArrayList<>();
 
     public Map<String, List<Player>> playingMap = new HashMap<>();
     public Map<String, List<Player>> spectatingMap = new HashMap<>();
     public Map<String, List<Player>> editingMap = new HashMap<>();
     public Map<String, String> gameStatusMap = new HashMap<>();
-    public Map<String, CountdownTask> countdownMap = new HashMap<>();
+    public Map<String, StartingCountdownTask> startingCountdownMap = new HashMap<>();
+    public Map<String, PlayingCountUpTask> playingCountUpMap = new HashMap<>();
     public Map<String, Map<Block, Material>> rollbackMap = new HashMap<>();
+    public Map<Player, ScoreboardController> scoreboardMap = new HashMap<>();
 
     public void loadDefaultArenaValues(World arena){
         String arenaName = arena.getName();
 
-        this.plugin.playingMap.put(arenaName, new ArrayList<>());
-        this.plugin.spectatingMap.put(arenaName, new ArrayList<>());
-        this.plugin.editingMap.put(arenaName, new ArrayList<>());
-        this.plugin.gameStatusMap.put(arenaName, "stopped");
-        this.plugin.countdownMap.put(arenaName, new CountdownTask(plugin, arena));
-        this.plugin.rollbackMap.put(arenaName, new HashMap<>());
+        playingMap.put(arenaName, new ArrayList<>());
+        spectatingMap.put(arenaName, new ArrayList<>());
+        editingMap.put(arenaName, new ArrayList<>());
+        gameStatusMap.put(arenaName, "stopped");
+        startingCountdownMap.put(arenaName, new StartingCountdownTask(plugin, arena));
+        playingCountUpMap.put(arenaName, new PlayingCountUpTask(plugin, arena));
+        rollbackMap.put(arenaName, new HashMap<>());
     }
 
-    public void loadWorlds(){
+    public void removeDefaultArenaValues(String arenaName){
+        playingMap.remove(arenaName);
+        spectatingMap.remove(arenaName);
+        editingMap.remove(arenaName);
+        gameStatusMap.remove(arenaName);
+        startingCountdownMap.remove(arenaName);
+        playingCountUpMap.remove(arenaName);
+        rollbackMap.remove(arenaName);
+    }
+
+    private void loadWorlds(){
         for (String arenaName: data.getDataConfig().getStringList("arenas")) {  // load in the worlds
             World arena = Bukkit.getWorld(arenaName);
 
@@ -61,16 +80,25 @@ public final class TntRun extends JavaPlugin {
         }
     }
 
+    // on reload loads in the scoreboards for all online players to prevent errors
+    private void loadScoreboards(){
+        for (Player p: Bukkit.getOnlinePlayers()){
+            // creates a scoreboard controller for each player that joins
+            if (!this.plugin.scoreboardMap.containsKey(p)){
+                this.plugin.scoreboardMap.put(p, new ScoreboardController(this.plugin, p));
+            }
+        }
+    }
+
     /*
-    TODO create a leaderboard for countdown so chat isn't spammed
     TODO make tntrun join display a window where u can select arenas through an inventory
     TODO custom spectator stuff like bed to leave game and compass to tp to players
     TODO double jumps - store a map of players and how many double jumps they have (reset -> config amount) check if their in the air, add y velocity to player
     TODO maybe put a confirm on the delete command
     TODO could put all arenas in a single world (too many worlds might look confusing in the server folder) -> require setting positions to protect and stuff like that needing a /tr pos1 /tr pos2
+    TODO single arena map which is then duplicated to host multiple at the same time
 
-    TODO footstep bugging noise died of fall dmg when u go lobby maybe remove y velocity
-    TODO test concurrent games
+    TODO edit auto complete doesn't work
 
     TODO spectating config: (concerned that u might be able to body block as a spec)
     have night vision: true
@@ -83,21 +111,29 @@ public final class TntRun extends JavaPlugin {
 
         // initialise variables
         plugin = this;
+
         data = new DataManager(this);
 
-        countdown = new Countdown(this);
-        lobby = new Lobby(this);
-        perms = new Perms();
-        playerMaps = new PlayerMaps(this);
-        spectator = new Spectator(this);
-        winner = new Winner(this);
+        // controllers
+        countdownController = new CountdownController(this);
+        lobbyController = new LobbyController(this);
+        permController = new PermController();
+        playerMapsController = new PlayerMapsController(this);
+        spectatorController = new SpectatorController(this);
+        winController = new WinController(this);
 
+        // tasks
         blockRemoverTask = new BlockRemoverTask(this);
 
-        loadWorlds();
+        // loads required to prevent null errors
+        loadWorlds();  // makes sure there is a key for each world in the player maps
+        loadScoreboards();  // makes sure there is a scoreboard for each player online on reload (as it is only handled on join/leave)
 
         // commands
         Objects.requireNonNull(getCommand("tntrun")).setExecutor(new CommandManager(this));
+        Objects.requireNonNull(getCommand("forceStart")).setExecutor(new ForceStartCommand(this));
+        Objects.requireNonNull(getCommand("leave")).setExecutor(new LeaveCommand(this));
+        Objects.requireNonNull(getCommand("spectate")).setExecutor(new SpectateCommand(this));
 
         // listeners
         Bukkit.getPluginManager().registerEvents(new BlockBreakListener(this), this);

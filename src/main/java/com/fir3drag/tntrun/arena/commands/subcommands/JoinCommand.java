@@ -20,8 +20,8 @@ public class JoinCommand implements SubCommand {
     }
 
     @Override
-    public void execute(CommandSender commandSender, Command command, String s, String[] args) {
-        if (!this.plugin.perms.check(commandSender, "tntrun.join")){
+    public void onCommand(CommandSender commandSender, Command command, String s, String[] args) {
+        if (!this.plugin.permController.check(commandSender, "tntrun.join")){
             return;
         }
 
@@ -57,10 +57,11 @@ public class JoinCommand implements SubCommand {
             }
 
             // if the world your going to is an arena and it already contains you as an player then your already in the world
-            if (arenas.contains(arenaName) &&
-                    this.plugin.playingMap.get(arenaName).contains(player) || this.plugin.spectatingMap.get(arenaName).contains(player)){
-                player.sendMessage(ChatColor.RED + "Already connected to arena '" + arenaName + "'.");
-                return;
+            if (arenas.contains(arenaName)) {
+                if (this.plugin.playingMap.get(arenaName).contains(player) || this.plugin.spectatingMap.get(arenaName).contains(player)) {
+                    player.sendMessage(ChatColor.RED + "Already connected to arena '" + arenaName + "'.");
+                    return;
+                }
             }
 
             if (this.plugin.gameStatusMap.get(arenaName).equals("starting") && this.plugin.playingMap.get(arenaName).size() >= maxPlayers) {
@@ -71,9 +72,7 @@ public class JoinCommand implements SubCommand {
             // handles the world you were in (done after to make sure msgs are sent correctly, e.g. tp player out of world before the countdown cancel msg appears
             if (arenas.contains(currentWorldName)) { // current world checks
                 // if the player is already in an arena remove them from the lists before tping them to the new arena
-                this.plugin.playerMaps.removeAll(arenaName, player);
-                this.plugin.countdown.checkForCancel(currentWorld);  // handles the countdown
-                this.plugin.winner.checkForWinner(currentWorld, player);  // handles players leaving during game
+                this.plugin.playerMapsController.removeAll(currentWorldName, player);
             }
 
             if (arenas.contains(arenaName)) {  // prevents you joining the arena whilst its restarting
@@ -90,19 +89,19 @@ public class JoinCommand implements SubCommand {
                 if (clearInventory) player.getInventory().clear();
 
                 if (this.plugin.gameStatusMap.get(arenaName).equals("stopped") || this.plugin.gameStatusMap.get(arenaName).equals("starting")) {  // if the game is not started add them as a player
-                    this.plugin.playerMaps.addToPlaying(arenaName, player);  // adds the player to the playing list
-                    this.plugin.countdown.checkForStart(arena, 0);  // handles the countdown times depending on player size
+                    this.plugin.playerMapsController.addToPlaying(arenaName, player);  // adds the player to the playing list
+                    this.plugin.countdownController.checkForStart(arenaName, 0);  // handles the countdown times depending on player size
                 }
 
                 if (this.plugin.gameStatusMap.get(arenaName).equals("playing")) {  // if the game is started add them as a spectator
-                    this.plugin.playerMaps.addToSpectating(arenaName, player);// adds the player to the spectating list
+                    this.plugin.playerMapsController.addToSpectating(arenaName, player);// adds the player to the spectating list
                 }
             }
         }
     }
 
     @Override
-    public List<String> tabComplete(CommandSender commandSender, Command command, String s, String[] args) {
+    public List<String> onTabComplete(CommandSender commandSender, Command command, String s, String[] args) {
         if (args.length == 1){
             List<String> allCompletions = this.plugin.data.getDataConfig().getStringList("arenas");
             List<String> disabledArenas = this.plugin.data.getDataConfig().getStringList("disabledArenas");

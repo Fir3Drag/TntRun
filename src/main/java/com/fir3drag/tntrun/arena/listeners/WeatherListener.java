@@ -20,7 +20,7 @@ public class WeatherListener implements Listener {
         boolean disableWeather = this.plugin.data.getTntRunConfig().getBoolean("disableWeather");
         String arenaName = event.getWorld().getName();
 
-        if (arenas.contains(arenaName) && disableWeather){  // checks its an arena
+        if (disableWeather){  // checks its an arena
             event.setCancelled(true);
         }
     }

@@ -24,21 +24,20 @@ public class PlayerMoveListener implements Listener {
         long voidYLevel = this.plugin.data.getTntRunConfig().getInt("voidYLevel");
         Player player = event.getPlayer();
         String arenaName = player.getWorld().getName();
-        World arena = player.getWorld();
 
         // handles player falling = lose game
         if (arenas.contains(arenaName)){ // checks your in an arena
             if (this.plugin.playingMap.get(arenaName).contains(player) && this.plugin.gameStatusMap.get(arenaName).equals("playing") &&
-                    player.getLocation().getBlockY() < deathYLevel){ // check if you are playing and have fallen off
+                    player.getLocation().getBlockY() < deathYLevel){
+                // check if you are playing and have fallen off
                 for (Player p: this.plugin.playingMap.get(arenaName)){ // msgs all players
                     p.sendMessage(player.getDisplayName() + " has died.");
                 }
                 for (Player p: this.plugin.spectatingMap.get(arenaName)){ // msgs all spectators
                     p.sendMessage(player.getDisplayName() + " has died.");
                 }
-                this.plugin.playerMaps.removeFromPlaying(arenaName, player);
-                this.plugin.playerMaps.addToSpectating(arenaName, player);
-                this.plugin.winner.checkForWinner(arena, player);
+                this.plugin.playerMapsController.addToSpectating(arenaName, player);
+                this.plugin.playerMapsController.removeFromPlaying(arenaName, player);
             }
         }
 

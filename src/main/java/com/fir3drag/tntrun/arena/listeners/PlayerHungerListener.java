@@ -25,7 +25,7 @@ public class PlayerHungerListener implements Listener {
             List<String> arenas = this.plugin.data.getDataConfig().getStringList("arenas");
             boolean disableHunger = this.plugin.data.getTntRunConfig().getBoolean("disableHunger");
 
-            if (arenas.contains(arenaName) && disableHunger){
+            if (disableHunger){
                 event.setCancelled(true);
             }
         }

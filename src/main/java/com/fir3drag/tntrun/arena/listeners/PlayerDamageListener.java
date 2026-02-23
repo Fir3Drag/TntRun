@@ -23,7 +23,7 @@ public class PlayerDamageListener implements Listener {
            List<String> arenas = this.plugin.data.getDataConfig().getStringList("arenas");
            boolean disableDamage = this.plugin.data.getTntRunConfig().getBoolean("disableDamage");
 
-           if (arenas.contains(arenaName) && disableDamage){
+           if (disableDamage){
                event.setCancelled(true);
            }
         }

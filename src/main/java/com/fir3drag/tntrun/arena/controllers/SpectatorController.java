@@ -1,13 +1,12 @@
-package com.fir3drag.tntrun.arena;
+package com.fir3drag.tntrun.arena.controllers;
 
 import com.fir3drag.tntrun.TntRun;
-import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 
-public class Spectator {
+public class SpectatorController {
     private final TntRun plugin;
 
-    public Spectator(TntRun plugin) {
+    public SpectatorController(TntRun plugin) {
         this.plugin = plugin;
     }
 

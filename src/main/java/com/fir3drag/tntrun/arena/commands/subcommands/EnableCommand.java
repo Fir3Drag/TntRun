@@ -19,8 +19,8 @@ public class EnableCommand implements SubCommand {
     }
 
     @Override
-    public void execute(CommandSender commandSender, Command command, String s, String[] args) {
-        if (!this.plugin.perms.check(commandSender, "tntrun.enable")){
+    public void onCommand(CommandSender commandSender, Command command, String s, String[] args) {
+        if (!this.plugin.permController.check(commandSender, "tntrun.enable")){
             return;
         }
 
@@ -48,7 +48,7 @@ public class EnableCommand implements SubCommand {
     }
 
     @Override
-    public List<String> tabComplete(CommandSender commandSender, Command command, String s, String[] args) {
+    public List<String> onTabComplete(CommandSender commandSender, Command command, String s, String[] args) {
         if (args.length == 1){
             List<String> allCompletions = this.plugin.data.getDataConfig().getStringList("disabledArenas");
             List<String> completions = new ArrayList<>();

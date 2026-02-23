@@ -20,7 +20,7 @@ public class CreatureSpawnListener implements Listener {
         boolean disableCreatureSpawn = this.plugin.data.getTntRunConfig().getBoolean("disableCreatureSpawn");
         String arenaName = event.getEntity().getWorld().getName();
 
-        if (arenas.contains(arenaName) && disableCreatureSpawn){  // checks its an arena
+        if (disableCreatureSpawn){  // checks its an arena
             event.setCancelled(true);
         }
     }

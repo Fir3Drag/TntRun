@@ -19,8 +19,8 @@ public class DisableCommand implements SubCommand {
     }
 
     @Override
-    public void execute(CommandSender commandSender, Command command, String s, String[] args) {
-        if (!this.plugin.perms.check(commandSender, "tntrun.disable")){
+    public void onCommand(CommandSender commandSender, Command command, String s, String[] args) {
+        if (!this.plugin.permController.check(commandSender, "tntrun.disable")){
             return;
         }
 
@@ -50,13 +50,17 @@ public class DisableCommand implements SubCommand {
         }
         // check if the game is queueing, if yes tp all the players out and cancel the countdown
         if (!this.plugin.gameStatusMap.get(arenaName).equals("restarting")){
-            for (Player p : new ArrayList<>(this.plugin.playingMap.get(arenaName))) {  // removing from the list so requires new
-                Bukkit.broadcastMessage(p.toString());
+            for (Player p : new ArrayList<>(this.plugin.playingMap.get(arenaName))) {  // sends back the players
                 p.sendMessage(ChatColor.RED + "Arena has been disabled.");
-                p.teleport(Bukkit.getWorlds().get(0).getSpawnLocation());
-                this.plugin.playerMaps.removeAll(arenaName, p);
+                this.plugin.lobbyController.tp(p);
+                this.plugin.playerMapsController.removeFromPlaying(arenaName, p);
             }
-            this.plugin.countdownMap.get(arenaName).cancelCountdown();
+            for (Player p : new ArrayList<>(this.plugin.spectatingMap.get(arenaName))) {  // sends back the spectators
+                p.sendMessage(ChatColor.RED + "Arena has been disabled.");
+                this.plugin.lobbyController.tp(p);
+                this.plugin.playerMapsController.removeFromSpectating(arenaName, p);
+            }
+            this.plugin.startingCountdownMap.get(arenaName).cancelCountdown();
         }
         disabledArenas.add(arenaName);
         this.plugin.data.getDataConfig().set("disabledArenas", disabledArenas);
@@ -65,7 +69,7 @@ public class DisableCommand implements SubCommand {
     }
 
     @Override
-    public List<String> tabComplete(CommandSender commandSender, Command command, String s, String[] args) {
+    public List<String> onTabComplete(CommandSender commandSender, Command command, String s, String[] args) {
         if (args.length == 1){
             List<String> allCompletions = this.plugin.data.getDataConfig().getStringList("arenas");
             List<String> disabledArenas = this.plugin.data.getDataConfig().getStringList("disabledArenas");

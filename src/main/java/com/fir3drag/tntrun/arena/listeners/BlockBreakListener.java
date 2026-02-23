@@ -21,11 +21,16 @@ public class BlockBreakListener implements Listener {
         Player player = event.getPlayer();
         String arenaName = player.getWorld().getName();
 
+        // allow you to edit lobby
+        if (this.plugin.lobbyEditList.contains(player)){
+            return;
+        }
+
         if (arenas.contains(arenaName)){  // checks its an arena
             if (this.plugin.editingMap.get(arenaName).contains(player)){  // if they are in the list prevents you getting to the cancel event
                 return;
             }
-            event.setCancelled(true);
         }
+        event.setCancelled(true);
     }
 }

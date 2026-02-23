@@ -4,6 +4,7 @@ import com.fir3drag.tntrun.TntRun;
 import com.fir3drag.tntrun.arena.commands.interfaces.SubCommand;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.GameMode;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -22,8 +23,8 @@ public class EditCommand implements SubCommand {
     }
 
     @Override
-    public void execute(CommandSender commandSender, Command command, String s, String[] args) {
-        if (!this.plugin.perms.check(commandSender, "tntrun.edit")){
+    public void onCommand(CommandSender commandSender, Command command, String s, String[] args) {
+        if (!this.plugin.permController.check(commandSender, "tntrun.edit")){
             return;
         }
         List<String> arenas = this.plugin.data.getDataConfig().getStringList("arenas");
@@ -31,15 +32,36 @@ public class EditCommand implements SubCommand {
 
         if (commandSender instanceof Player){
             Player player = (Player) commandSender;
+            Player targetPlayer;
 
             if (args.length == 0){
-                player.sendMessage(ChatColor.RED + "/tntrun edit [arena]");
+                player.sendMessage(ChatColor.RED + "/tntrun edit [arena] [optional for player]");
                 return;
             }
-            World currentWorld = player.getWorld();
             String currentWorldName = player.getWorld().getName();
             String arenaName = args[0];
             World arena = Bukkit.getWorld(arenaName);
+
+            if (args.length >= 2){
+                String targetPlayerName = args[1];
+                targetPlayer = Bukkit.getPlayerExact(targetPlayerName);
+
+                if (targetPlayer == null){
+                    player.sendMessage(ChatColor.RED + "Cannot find player '" + targetPlayerName + "'.");
+                    return;
+                }
+            }
+            else {
+                targetPlayer = player;
+            }
+
+            if (arenaName.equalsIgnoreCase("lobby")){
+                this.plugin.lobbyEditList.add(targetPlayer);
+                targetPlayer.setGameMode(GameMode.CREATIVE);
+                targetPlayer.sendMessage(ChatColor.YELLOW + "You can now edit the lobby.");
+                targetPlayer.sendMessage(ChatColor.YELLOW + "Run /leave to disable your editing ability");
+                return;
+            }
 
             if (arena == null){  // checks the world exists
                 player.sendMessage(ChatColor.RED + "Arena '" + arenaName + "' does not exist.");
@@ -48,7 +70,7 @@ public class EditCommand implements SubCommand {
 
             if (arenas.contains(arenaName)){  // if the arena exists and the player is not in an arena, allow the player to edit and tp them into the world
                 // if the world your going to is an arena and it already contains you as an editor then your already in the world
-                if (this.plugin.editingMap.get(arenaName).contains(player)){
+                if (this.plugin.editingMap.get(arenaName).contains(targetPlayer)){
                     player.sendMessage(ChatColor.RED + "Already editing arena '" + arenaName + "'.");
                     return;
                 }
@@ -61,25 +83,19 @@ public class EditCommand implements SubCommand {
                 }
 
                 if (arenas.contains(currentWorldName)) {  // checks if the player is already in an arena
-                    this.plugin.spectator.showAllPlayersYouAndYouAllPlayers(currentWorldName, player);
-                    this.plugin.playerMaps.removeAll(currentWorldName, player);
-                    this.plugin.countdown.checkForCancel(currentWorld);
-                    this.plugin.winner.checkForWinner(currentWorld, player);
+                    this.plugin.playerMapsController.removeAll(currentWorldName, targetPlayer);
                 }
 
                 // setup for new arean
-                this.plugin.playerMaps.addToEditing(arenaName, player);  // add to the new editing list of the arena their going to
-                player.teleport(arena.getSpawnLocation()); // moves player into arena
+                this.plugin.playerMapsController.addToEditing(arenaName, targetPlayer);  // add to the new editing list of the arena their going to
+                targetPlayer.teleport(arena.getSpawnLocation()); // moves player into arena
 
-                player.sendMessage(ChatColor.YELLOW + "Editing arena '" + arenaName + "'.");
+                targetPlayer.sendMessage(ChatColor.YELLOW + "Editing arena '" + arenaName + "'.");
 
                 if (disabledArenas.contains(arenaName)){
-                    player.sendMessage(ChatColor.YELLOW + "This arena is currently disabled. use /tntrun enable " + arenaName + " to allow players to join.");
+                    targetPlayer.sendMessage(ChatColor.YELLOW + "This arena is currently disabled. use /tntrun enable " + arenaName + " to allow players to join.");
                 }
-                player.sendMessage(ChatColor.YELLOW + "Type /tntrun leave to return to main world.");
-            }
-            else {
-                player.sendMessage(ChatColor.RED + "You are already editing an arena, /tntrun leave");
+                targetPlayer.sendMessage(ChatColor.YELLOW + "Type /leave to return to main world.");
             }
         }
         else {
@@ -88,10 +104,30 @@ public class EditCommand implements SubCommand {
     }
 
     @Override
-    public List<String> tabComplete(CommandSender commandSender, Command command, String s, String[] args) {
+    public List<String> onTabComplete(CommandSender commandSender, Command command, String s, String[] args) {
+        List<String> allCompletions;
+        List<String> completions;
+
         if (args.length == 1){
-            List<String> allCompletions = this.plugin.data.getDataConfig().getStringList("arenas");
-            List<String> completions = new ArrayList<>();
+            allCompletions = this.plugin.data.getDataConfig().getStringList("arenas");
+            completions = new ArrayList<>();
+
+            allCompletions.add("lobby"); // allows you to edit the lobby
+
+            for (String completion: allCompletions){ // dynamically updates the tab list depending on what's written
+                if (completion.toLowerCase(Locale.ROOT).startsWith(args[0].toLowerCase(Locale.ROOT)))
+                {
+                    completions.add(completion);
+                }
+            }
+        }
+        else if (args.length == 2){  //TODO play auto complete doesn't work
+            allCompletions = new ArrayList<>();
+            completions = new ArrayList<>();
+
+            for (Player p: Bukkit.getOnlinePlayers()){ // convert the list into player names
+                allCompletions.add(p.getDisplayName());
+            }
 
             for (String completion: allCompletions){ // dynamically updates the tab list depending on whats written
                 if (completion.toLowerCase(Locale.ROOT).startsWith(args[0].toLowerCase(Locale.ROOT)))
@@ -101,7 +137,9 @@ public class EditCommand implements SubCommand {
             }
             return completions;
         }
-
-        return Collections.emptyList();
+        else {
+            completions = Collections.emptyList();
+        }
+        return completions;
     }
 }

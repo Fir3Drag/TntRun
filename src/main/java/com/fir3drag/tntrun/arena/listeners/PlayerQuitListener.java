@@ -1,6 +1,7 @@
 package com.fir3drag.tntrun.arena.listeners;
 
 import com.fir3drag.tntrun.TntRun;
+import com.fir3drag.tntrun.arena.controllers.ScoreboardController;
 import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -17,17 +18,19 @@ public class PlayerQuitListener implements Listener {
     }
 
     @EventHandler
-    public void onPlayerQuit(PlayerQuitEvent event){  // removes player from map lists when they disconnect to prevent errors
-        List<String> arenas = this.plugin.data.getDataConfig().getStringList("arenas");
+    public void onPlayerQuit(PlayerQuitEvent event){
         Player player = event.getPlayer();
+
+        // removes the scoreboard controller for each player that leaves
+        this.plugin.scoreboardMap.remove(player);
+
+        // removes player from map lists when they disconnect to prevent errors
+        List<String> arenas = this.plugin.data.getDataConfig().getStringList("arenas");
         World arena = event.getPlayer().getWorld();
         String arenaName = arena.getName();
 
         if (arenas.contains(arenaName)){  // checks if its an arena and handles players leaving during start phase
-            this.plugin.spectator.showAllPlayersYouAndYouAllPlayers(arenaName, player);
-            this.plugin.playerMaps.removeAll(arenaName, player);
-            this.plugin.countdown.checkForCancel(arena);
-            this.plugin.winner.checkForWinner(arena, player);
+            this.plugin.playerMapsController.removeAll(arenaName, player);
         }
     }
 }

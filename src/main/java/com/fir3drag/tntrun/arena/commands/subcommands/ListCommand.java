@@ -17,8 +17,8 @@ public class ListCommand implements SubCommand {
     }
 
     @Override
-    public void execute(CommandSender commandSender, Command command, String s, String[] args) {
-        if (!this.plugin.perms.check(commandSender, "tntrun.list")){
+    public void onCommand(CommandSender commandSender, Command command, String s, String[] args) {
+        if (!this.plugin.permController.check(commandSender, "tntrun.list")){
             return;
         }
         commandSender.sendMessage(ChatColor.YELLOW + "Arenas: " + this.plugin.data.getDataConfig().getStringList("arenas"));
@@ -26,7 +26,7 @@ public class ListCommand implements SubCommand {
     }
 
     @Override
-    public List<String> tabComplete(CommandSender commandSender, Command command, String s, String[] args) {
+    public List<String> onTabComplete(CommandSender commandSender, Command command, String s, String[] args) {
         return Collections.emptyList();
     }
 }

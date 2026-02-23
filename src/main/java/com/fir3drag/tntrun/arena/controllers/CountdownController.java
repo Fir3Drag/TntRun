@@ -1,21 +1,19 @@
-package com.fir3drag.tntrun.arena;
+package com.fir3drag.tntrun.arena.controllers;
 
 import com.fir3drag.tntrun.TntRun;
-import org.bukkit.World;
 import org.bukkit.entity.Player;
 
 import java.util.List;
 
-public class Countdown {
+public class CountdownController {
     private final TntRun plugin;
 
-    public Countdown(TntRun plugin) {
+    public CountdownController(TntRun plugin) {
         this.plugin = plugin;
     }
 
     // modify is used to change the player count if this code runs before or after the player joins the game
-    public void checkForStart(World arena, Integer modify){
-        String arenaName = arena.getName();
+    public void checkForStart(String arenaName, Integer modify){
         List<Player> playingList = this.plugin.playingMap.get(arenaName);
 
         int halfCountdown = this.plugin.data.getTntRunConfig().getInt("halfCountdown");
@@ -30,22 +28,21 @@ public class Countdown {
 
         // checks if the count needs to be started
         if (playingList.size() == requiredPlayersToStartQuarterCountdown + modify && this.plugin.gameStatusMap.get(arenaName).equals("starting")) {
-            if (this.plugin.countdownMap.get(arenaName).getCountdownTime() > quarterCountdown){
-                this.plugin.countdownMap.get(arenaName).modifyCountdown(quarterCountdown);
+            if (this.plugin.startingCountdownMap.get(arenaName).getCountdownTime() > quarterCountdown){
+                this.plugin.startingCountdownMap.get(arenaName).modifyCountdown(quarterCountdown);
             }
         }
         else if (playingList.size() == requiredPlayersToStartHalfCountdown + modify && this.plugin.gameStatusMap.get(arenaName).equals("starting")) {
-            if (this.plugin.countdownMap.get(arenaName).getCountdownTime() > halfCountdown){
-                this.plugin.countdownMap.get(arenaName).modifyCountdown(halfCountdown);
+            if (this.plugin.startingCountdownMap.get(arenaName).getCountdownTime() > halfCountdown){
+                this.plugin.startingCountdownMap.get(arenaName).modifyCountdown(halfCountdown);
             }
         }
         else if (playingList.size() >= requiredPlayersToStartCountdown + modify && this.plugin.gameStatusMap.get(arenaName).equals("stopped")) {
-            this.plugin.countdownMap.get(arenaName).startCountdown();
+            this.plugin.startingCountdownMap.get(arenaName).startCountdown();
         }
     }
 
-    public void checkForCancel(World arena){
-        String arenaName = arena.getName();
+    public void checkForCancel(String arenaName){
         List<Player> playingList = this.plugin.playingMap.get(arenaName);
 
         int fullCountdown = this.plugin.data.getTntRunConfig().getInt("fullCountdown");
@@ -58,14 +55,14 @@ public class Countdown {
             requiredPlayersToStartCountdown = 2;
         }
 
-        if (playingList.size() <= requiredPlayersToStartCountdown-1 && this.plugin.gameStatusMap.get(arenaName).equals("starting") && this.plugin.countdownMap.get(arenaName).isCounting()) {
-            this.plugin.countdownMap.get(arenaName).cancelCountdown();
+        if (playingList.size() <= requiredPlayersToStartCountdown-1 && this.plugin.gameStatusMap.get(arenaName).equals("starting") && this.plugin.startingCountdownMap.get(arenaName).isCounting()) {
+            this.plugin.startingCountdownMap.get(arenaName).cancelCountdown();
         }
-        else if (playingList.size() == requiredPlayersToStartHalfCountdown-1 && this.plugin.gameStatusMap.get(arenaName).equals("starting") && this.plugin.countdownMap.get(arenaName).isCounting()) {
-            this.plugin.countdownMap.get(arenaName).modifyCountdown(fullCountdown);
+        else if (playingList.size() == requiredPlayersToStartHalfCountdown-1 && this.plugin.gameStatusMap.get(arenaName).equals("starting") && this.plugin.startingCountdownMap.get(arenaName).isCounting()) {
+            this.plugin.startingCountdownMap.get(arenaName).modifyCountdown(fullCountdown);
         }
-        else if (playingList.size() == requiredPlayersToStartQuarterCountdown-1 && this.plugin.gameStatusMap.get(arenaName).equals("starting") && this.plugin.countdownMap.get(arenaName).isCounting()) {
-            this.plugin.countdownMap.get(arenaName).modifyCountdown(halfCountdown);
+        else if (playingList.size() == requiredPlayersToStartQuarterCountdown-1 && this.plugin.gameStatusMap.get(arenaName).equals("starting") && this.plugin.startingCountdownMap.get(arenaName).isCounting()) {
+            this.plugin.startingCountdownMap.get(arenaName).modifyCountdown(halfCountdown);
         }
     }
 }
