@@ -1,9 +1,6 @@
 package com.fir3drag.tntrun;
 
-import com.fir3drag.tntrun.arena.commands.CommandManager;
-import com.fir3drag.tntrun.arena.commands.ForceStartCommand;
-import com.fir3drag.tntrun.arena.commands.LeaveCommand;
-import com.fir3drag.tntrun.arena.commands.SpectateCommand;
+import com.fir3drag.tntrun.arena.commands.*;
 import com.fir3drag.tntrun.arena.controllers.*;
 import com.fir3drag.tntrun.arena.listeners.*;
 import com.fir3drag.tntrun.arena.tasks.BlockRemoverTask;
@@ -98,11 +95,13 @@ public final class TntRun extends JavaPlugin {
     TODO could put all arenas in a single world (too many worlds might look confusing in the server folder) -> require setting positions to protect and stuff like that needing a /tr pos1 /tr pos2
     TODO single arena map which is then duplicated to host multiple at the same time
 
-    TODO edit auto complete doesn't work
+    TODO auto completes are broken for edit when adding player name at the end
 
     TODO spectating config: (concerned that u might be able to body block as a spec)
     have night vision: true
     can see other spectators: true (might make this player decided with a custom item)
+
+    TODO haven't tested if the number of players playing decrements
      */
 
     @Override
@@ -132,6 +131,7 @@ public final class TntRun extends JavaPlugin {
         // commands
         Objects.requireNonNull(getCommand("tntrun")).setExecutor(new CommandManager(this));
         Objects.requireNonNull(getCommand("forceStart")).setExecutor(new ForceStartCommand(this));
+        Objects.requireNonNull(getCommand("fly")).setExecutor(new FlyCommand(this));
         Objects.requireNonNull(getCommand("leave")).setExecutor(new LeaveCommand(this));
         Objects.requireNonNull(getCommand("spectate")).setExecutor(new SpectateCommand(this));
 

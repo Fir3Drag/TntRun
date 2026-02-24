@@ -15,6 +15,8 @@ public class DataManager {
 
     private FileConfiguration tntRunConfig = null;
     private File tntRunFile = null;
+    private FileConfiguration scoreboardConfig = null;
+    private File scoreboardFile = null;
     private FileConfiguration dataConfig = null;
     private File dataFile = null;
 
@@ -25,7 +27,7 @@ public class DataManager {
 
     public void reloadConfig()
     {
-        // data file
+        // tntrun file
         if (this.tntRunFile == null)
         {
             this.tntRunFile = new File(this.plugin.getDataFolder(), "tntrun.yml");
@@ -37,6 +39,20 @@ public class DataManager {
         {
             YamlConfiguration tntRunDefaultConfig = YamlConfiguration.loadConfiguration(new InputStreamReader(tntRunDefaultStream));
             tntRunConfig.setDefaults(tntRunDefaultConfig);
+        }
+
+        // scoreboard file
+        if (this.scoreboardFile == null)
+        {
+            this.scoreboardFile = new File(this.plugin.getDataFolder(), "scoreboard.yml");
+        }
+        this.scoreboardConfig = YamlConfiguration.loadConfiguration(this.scoreboardFile);
+        InputStream scoreboardDefaultStream = this.plugin.getResource("scoreboard.yml");
+
+        if (scoreboardDefaultStream != null)
+        {
+            YamlConfiguration scoreboardDefaultConfig = YamlConfiguration.loadConfiguration(new InputStreamReader(scoreboardDefaultStream));
+            scoreboardConfig.setDefaults(scoreboardDefaultConfig);
         }
 
         // data file
@@ -61,6 +77,15 @@ public class DataManager {
             reloadConfig();
         }
         return this.tntRunConfig;
+    }
+
+    public FileConfiguration getScoreboardConfig()
+    {
+        if (this.scoreboardConfig == null)
+        {
+            reloadConfig();
+        }
+        return this.scoreboardConfig;
     }
 
     public FileConfiguration getDataConfig()
@@ -99,6 +124,17 @@ public class DataManager {
             if (!this.tntRunFile.exists())
             {
                 this.plugin.saveResource("tntrun.yml", false);
+            }
+        }
+
+        // scoreboard
+        if (this.scoreboardFile == null)
+        {
+            this.scoreboardFile = new File(this.plugin.getDataFolder(), "scoreboard.yml");
+
+            if (!this.scoreboardFile.exists())
+            {
+                this.plugin.saveResource("scoreboard.yml", false);
             }
         }
 

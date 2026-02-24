@@ -1,0 +1,53 @@
+# LOBBY
+
+# keywords:
+# $winCount (player win count)
+#
+# (DUPLICATED LINES DON'T WORK add a space e.g line1 '-', line2 '- ')
+lobbyScoreboardTitle: "&eTntRun Lobby"  # cannot be longer than 16 characters
+lobbyScoreboard:  # max of 15 lines and each line cannot be longer than 40 characters
+  - "&e----------------"
+  - "&eWins: $winCount"
+  - "&e---------------- "
+  - "&eserver.com"
+
+# STARTING
+
+# keywords:
+# $arena (arena name)
+# $duration (countdown starting time / countup time)
+# $playerCount (amount of players in the arena / amount players alive)
+# $maxPlayers (max players per arena)
+# $winCount (player win count)
+#
+# (DUPLICATED LINES DON'T WORK add a space e.g line1 '-', line2 '- ')
+startingScoreboardTitle: "&eTntRun Queue"  # cannot be longer than 16 characters
+startingScoreboard:  # max of 15 lines and each line cannot be longer than 40 characters
+  - "&e----------------"
+  - "&eArena: $arena"
+  - " "
+  - "&eDuration: $duration"
+  - "  "
+  - "&ePlayers: $playerCount/$maxPlayers"
+  - "&e---------------- "
+  - "&eserver.com"
+
+# PLAYING
+
+# keywords:
+# $arena (arena name)
+# $duration (countdown starting time / countup time)
+# $playerCount (amount of players in the arena / amount players alive)
+# $winCount (player win count)
+#
+# (DUPLICATED LINES DON'T WORK add a space e.g line1 '-', line2 '- ')
+playingScoreboardTitle: "YELLOW TntRun Game"  # cannot be longer than 16 characters
+playingScoreboard:  # max of 15 lines and each line cannot be longer than 40 characters
+  - "&e----------------"
+  - "&eMap: $arena"
+  - " "
+  - "&eDuration: $duration"
+  - "  "
+  - "&ePlayers left: $playerCount"
+  - "&e---------------- "
+  - "&eserver.com"

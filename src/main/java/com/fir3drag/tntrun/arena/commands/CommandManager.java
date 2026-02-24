@@ -3,6 +3,7 @@ package com.fir3drag.tntrun.arena.commands;
 import com.fir3drag.tntrun.TntRun;
 import com.fir3drag.tntrun.arena.commands.interfaces.SubCommand;
 import com.fir3drag.tntrun.arena.commands.subcommands.*;
+import com.sun.org.apache.regexp.internal.RE;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -22,11 +23,12 @@ public class CommandManager implements CommandExecutor, TabCompleter {
         subCommands.put("enable", new EnableCommand(plugin));
         subCommands.put("join", new JoinCommand(plugin));
         subCommands.put("list", new ListCommand(plugin));
+        subCommands.put("reload", new ReloadCommand(plugin));
     }
 
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] args) {
-        String errorMsg = ChatColor.RED + "/tntrun create | delete | disable | edit | enable | join | list";
+        String errorMsg = ChatColor.RED + "/tntrun create | delete | disable | edit | enable | join | list | reload";
 
         if (args.length == 0) {
             commandSender.sendMessage(errorMsg);
@@ -53,7 +55,7 @@ public class CommandManager implements CommandExecutor, TabCompleter {
     @Override
     public List<String> onTabComplete(CommandSender commandSender, Command command, String s, String[] args) {
         if (args.length == 1){
-            List<String> allCompletions = Arrays.asList("create", "delete", "disable", "edit", "enable", "join", "list");
+            List<String> allCompletions = Arrays.asList("create", "delete", "disable", "edit", "enable", "join", "list", "reload");
             List<String> completions = new ArrayList<>();
 
             for (String completion: allCompletions){ // dynamically updates the tab list depending on whats written

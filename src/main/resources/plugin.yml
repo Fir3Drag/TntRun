@@ -42,6 +42,11 @@ commands:
     aliases: [fs]
     permission: tntrun.forceStart
     permission-message: "You don't have permission to force start TntRun arenas."
+  fly:
+    description: Allows you to fly
+    usage: /<command>
+    permission: tntrun.fly
+    permission-message: "You don't have permission to fly."
   leave:
     description: Allows a player to leave TntRun arenas
     usage: /<command> [optional player name]
@@ -77,6 +82,9 @@ permissions:
   tntrun.forceStart:
     description: Allows the player to reduce the start time of an arena to 10s
     default: op
+  tntrun.fly:
+    description: Allows the player to fly
+    default: op
   tntrun.join:
     description: Allows the player to join an arena
     default: true
@@ -85,6 +93,9 @@ permissions:
     default: true
   tntrun.list:
     description: Allows the player to list the arenas
+    default: op
+  tntrun.reload:
+    description: Allows the player to reload TntRun configs
     default: op
   tntrun.spectate:
     description: Allows the player to list the arenas
