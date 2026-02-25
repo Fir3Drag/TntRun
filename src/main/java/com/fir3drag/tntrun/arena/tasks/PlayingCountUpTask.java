@@ -19,6 +19,10 @@ public class PlayingCountUpTask {
     }
 
     public void startCountdown() {
+        if (plugin.isShuttingDown){  // prevents bukkit task errors
+            return;
+        }
+
         if (isCounting) {
             return;
         }
@@ -29,10 +33,10 @@ public class PlayingCountUpTask {
             @Override
             public void run() {
                 for (Player p: plugin.playingMap.get(arenaName)){  // msg players starting info
-                    plugin.scoreboardMap.get(p).refresh(arenaName);
+                    plugin.scoreboardController.refresh(arenaName, p);
                 }
                 for (Player p: plugin.spectatingMap.get(arenaName)) {  // msg spectators starting info
-                    plugin.scoreboardMap.get(p).refresh(arenaName);
+                    plugin.scoreboardController.refresh(arenaName, p);
                 }
                 countdownTime++;
             }

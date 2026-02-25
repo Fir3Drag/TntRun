@@ -6,27 +6,22 @@ import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.scoreboard.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ScoreboardController {
     private final TntRun plugin;
-    private final Player player;
 
-    // placeholders to prevent null errors
-    private Objective lobbyObjective = Bukkit.getScoreboardManager().getNewScoreboard().registerNewObjective("placeholder", "dummy");
-    private Objective startingObjective = Bukkit.getScoreboardManager().getNewScoreboard().registerNewObjective("placeholder", "dummy");
-    private Objective playingObjective = Bukkit.getScoreboardManager().getNewScoreboard().registerNewObjective("placeholder", "dummy");
+    // stores players scoreboard
+    private final Map<Player, Objective> scoreboardMap = new HashMap<>();
 
-    public ScoreboardController(TntRun plugin, Player player) {
+    public ScoreboardController(TntRun plugin) {
         this.plugin = plugin;
-        this.player = player;
-
-        loadScoreboardConfig("", "lobbyScoreboard");
-        player.setScoreboard(lobbyObjective.getScoreboard());
     }
 
     // handle the user written scoreboard from the config to get colours and keywords
-    private void loadScoreboardConfig(String arenaName, String configName){
+    private void loadScoreboardConfig(String arenaName, String configName, Player player){
         List<String> startingScoreboardList = this.plugin.data.getScoreboardConfig().getStringList(configName);
         int scoreCount = startingScoreboardList.size();
         int stopCount = 1;  // if this goes above 15 it stops making lines
@@ -39,27 +34,20 @@ public class ScoreboardController {
             title = title.substring(0, 16);
         }
 
-        switch (configName) {  // overrides the correct objective
-            case "lobbyScoreboard":
-                lobbyObjective = Bukkit.getScoreboardManager().getNewScoreboard().registerNewObjective(title, "dummy");
-                lobbyObjective.setDisplaySlot(DisplaySlot.SIDEBAR);
-                break;
-            case "startingScoreboard":
-                startingObjective = Bukkit.getScoreboardManager().getNewScoreboard().registerNewObjective(title, "dummy");
-                startingObjective.setDisplaySlot(DisplaySlot.SIDEBAR);
-                break;
-            case "playingScoreboard":
-                playingObjective = Bukkit.getScoreboardManager().getNewScoreboard().registerNewObjective(title, "dummy");
-                playingObjective.setDisplaySlot(DisplaySlot.SIDEBAR);
-                break;
+        // recreates objective
+        if (scoreboardMap.containsKey(player)){
+            scoreboardMap.get(player).unregister();
         }
+        Objective objective = Bukkit.getScoreboardManager().getNewScoreboard().registerNewObjective(title, "dummy");
+        objective.setDisplaySlot(DisplaySlot.SIDEBAR);
 
-        for (String line: startingScoreboardList){  // loop through each string and turn it into a scoreboard line
+        // loop through each string and turn it into a scoreboard line
+        for (String line: startingScoreboardList){
             if (stopCount > 15){
                 break;
             }
 
-            if (!arenaName.isEmpty()){   // tries to replace arena
+            if (!arenaName.equals("lobby")){   // tries to replace arena
                 // keyword variables
                 String duration = String.valueOf(this.plugin.startingCountdownMap.get(arenaName).getCountdownTime());
                 int playerCount = this.plugin.playingMap.get(arenaName).size();
@@ -95,7 +83,7 @@ public class ScoreboardController {
                 }
             }
 
-            int winCount = this.plugin.data.getDataConfig().getInt(player.getUniqueId().toString());
+            int winCount = this.plugin.data.getDataConfig().getConfigurationSection(player.getUniqueId().toString()).getInt("winCount");
             line = line.replace("$winCount", String.valueOf(winCount));  // tries to get win count
 
             line = ChatColor.translateAlternateColorCodes('&', line);  // translate colors
@@ -104,52 +92,62 @@ public class ScoreboardController {
                 line = line.substring(0, 40);
             }
 
-            // creates the scoreboard line
-            Score score = null;
-
-            switch (configName) {
-                case "lobbyScoreboard":
-                    score = lobbyObjective.getScore(line);
-                    break;
-                case "startingScoreboard":
-                    score = startingObjective.getScore(line);
-                    break;
-                case "playingScoreboard":
-                    score = playingObjective.getScore(line);
-                    break;
-            }
-
-            if (score != null){
-                score.setScore(scoreCount);
-            }
+            Score score = objective.getScore(line);
+            score.setScore(scoreCount);
 
             scoreCount--;
             stopCount++;
         }
+
+        // stores the created objective
+        if (!scoreboardMap.containsKey(player)){
+            scoreboardMap.put(player, objective);
+        }
+        else {
+            scoreboardMap.replace(player, objective);
+        }
     }
 
     // recreates the scoreboards and displays the correct one to the player
-    public void refresh(String arenaName){
-        String arenaState = this.plugin.gameStatusMap.get(arenaName);
+    public void refresh(String arenaName, Player player){
+        if (this.plugin.lobbyList.contains(player)){  // check if in the lobby
+            loadScoreboardConfig("lobby", "lobbyScoreboard", player);
+            player.setScoreboard(scoreboardMap.get(player).getScoreboard());
+        }
 
-        // check if in the lobby
-        if (!this.plugin.playingMap.get(arenaName).contains(player) && !this.plugin.spectatingMap.get(arenaName).contains(player)){
-            lobbyObjective.unregister();
-            loadScoreboardConfig(arenaName, "lobbyScoreboard");
-            player.setScoreboard(lobbyObjective.getScoreboard());
-        }
-        else if (!this.plugin.editingMap.get(arenaName).contains(player)){
-            if (arenaState.equals("starting") || arenaState.equals("stopped")){
-                startingObjective.unregister();
-                loadScoreboardConfig(arenaName, "startingScoreboard");
-                player.setScoreboard(startingObjective.getScoreboard());
-            }
-            else if (arenaState.equals("playing")){
-                playingObjective.unregister();
-                loadScoreboardConfig(arenaName, "playingScoreboard");
-                player.setScoreboard(playingObjective.getScoreboard());
+        else if (!arenaName.equals("lobby")){
+            String arenaState = this.plugin.gameStatusMap.get(arenaName);
+
+            if (!this.plugin.editingMap.get(arenaName).contains(player)){  // checks their not editing (editors get the lobby scoreboard)
+                if (arenaState.equals("starting") || arenaState.equals("stopped")){
+                    loadScoreboardConfig(arenaName, "startingScoreboard", player);
+                    player.setScoreboard(scoreboardMap.get(player).getScoreboard());
+                }
+                else if (arenaState.equals("playing")){
+                    loadScoreboardConfig(arenaName, "playingScoreboard", player);
+                    player.setScoreboard(scoreboardMap.get(player).getScoreboard());
+                }
             }
         }
+    }
+
+    // handles updating your scoreboard on server join
+    public void handleJoin(Player player){
+        List<String> arenas = this.plugin.data.getDataConfig().getStringList("arenas");
+        String arenaName = player.getWorld().getName();
+
+        if (arenas.contains(arenaName)){
+            refresh(arenaName, player);
+        }
+        else {
+            refresh("lobby", player);
+        }
+    }
+
+    // remove a player from scoreboard map on leave in case it is looped upon in the future
+    // and a player not existing causes error
+    public void handleQuit(Player player){
+        scoreboardMap.remove(player);
     }
 }
 

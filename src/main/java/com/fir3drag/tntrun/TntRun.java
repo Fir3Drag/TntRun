@@ -7,10 +7,8 @@ import com.fir3drag.tntrun.arena.tasks.BlockRemoverTask;
 import com.fir3drag.tntrun.arena.tasks.PlayingCountUpTask;
 import com.fir3drag.tntrun.arena.tasks.StartingCountdownTask;
 import com.fir3drag.tntrun.configuration.DataManager;
-import org.bukkit.Bukkit;
-import org.bukkit.Material;
-import org.bukkit.World;
-import org.bukkit.WorldCreator;
+import com.fir3drag.tntrun.configuration.DefaultValues;
+import org.bukkit.*;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -18,18 +16,25 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.util.*;
 
 public final class TntRun extends JavaPlugin {
+    public boolean isShuttingDown;
+
     public TntRun plugin;
     public DataManager data;
+    public DefaultValues defaultValues;
 
     public CountdownController countdownController;
+    public ItemController itemController;
     public LobbyController lobbyController;
     public PermController permController;
     public PlayerMapsController playerMapsController;
+    public ScoreboardController scoreboardController;
     public SpectatorController spectatorController;
-    public WinController winController;
+    public GameController gameController;
+    public WorldController worldController;
 
     public BlockRemoverTask blockRemoverTask;
 
+    public List<Player> lobbyList = new ArrayList<>();
     public List<Player> lobbyEditList = new ArrayList<>();
 
     public Map<String, List<Player>> playingMap = new HashMap<>();
@@ -39,7 +44,18 @@ public final class TntRun extends JavaPlugin {
     public Map<String, StartingCountdownTask> startingCountdownMap = new HashMap<>();
     public Map<String, PlayingCountUpTask> playingCountUpMap = new HashMap<>();
     public Map<String, Map<Block, Material>> rollbackMap = new HashMap<>();
-    public Map<Player, ScoreboardController> scoreboardMap = new HashMap<>();
+
+    public void loadControllers(){
+        countdownController = new CountdownController(this);
+        itemController = new ItemController(this);
+        lobbyController = new LobbyController(this);
+        permController = new PermController();
+        playerMapsController = new PlayerMapsController(this);
+        scoreboardController = new ScoreboardController(this);
+        spectatorController = new SpectatorController(this);
+        gameController = new GameController(this);
+        worldController = new WorldController(this);
+    }
 
     public void loadDefaultArenaValues(World arena){
         String arenaName = arena.getName();
@@ -77,88 +93,94 @@ public final class TntRun extends JavaPlugin {
         }
     }
 
-    // on reload loads in the scoreboards for all online players to prevent errors
-    private void loadScoreboards(){
-        for (Player p: Bukkit.getOnlinePlayers()){
-            // creates a scoreboard controller for each player that joins
-            if (!this.plugin.scoreboardMap.containsKey(p)){
-                this.plugin.scoreboardMap.put(p, new ScoreboardController(this.plugin, p));
-            }
-        }
-    }
-
-    /*
-    TODO make tntrun join display a window where u can select arenas through an inventory
-    TODO custom spectator stuff like bed to leave game and compass to tp to players
-    TODO double jumps - store a map of players and how many double jumps they have (reset -> config amount) check if their in the air, add y velocity to player
-    TODO maybe put a confirm on the delete command
-    TODO could put all arenas in a single world (too many worlds might look confusing in the server folder) -> require setting positions to protect and stuff like that needing a /tr pos1 /tr pos2
-    TODO single arena map which is then duplicated to host multiple at the same time
-
-    TODO auto completes are broken for edit when adding player name at the end
-
-    TODO spectating config: (concerned that u might be able to body block as a spec)
-    have night vision: true
-    can see other spectators: true (might make this player decided with a custom item)
-
-    TODO haven't tested if the number of players playing decrements
-     */
-
-    @Override
-    public void onEnable() {
-        getLogger().info("TntRun plugin started");
-
-        // initialise variables
-        plugin = this;
-
-        data = new DataManager(this);
-
-        // controllers
-        countdownController = new CountdownController(this);
-        lobbyController = new LobbyController(this);
-        permController = new PermController();
-        playerMapsController = new PlayerMapsController(this);
-        spectatorController = new SpectatorController(this);
-        winController = new WinController(this);
-
-        // tasks
-        blockRemoverTask = new BlockRemoverTask(this);
-
-        // loads required to prevent null errors
-        loadWorlds();  // makes sure there is a key for each world in the player maps
-        loadScoreboards();  // makes sure there is a scoreboard for each player online on reload (as it is only handled on join/leave)
-
-        // commands
+    private void loadCommands(){
         Objects.requireNonNull(getCommand("tntrun")).setExecutor(new CommandManager(this));
         Objects.requireNonNull(getCommand("forceStart")).setExecutor(new ForceStartCommand(this));
         Objects.requireNonNull(getCommand("fly")).setExecutor(new FlyCommand(this));
         Objects.requireNonNull(getCommand("leave")).setExecutor(new LeaveCommand(this));
         Objects.requireNonNull(getCommand("spectate")).setExecutor(new SpectateCommand(this));
+    }
 
-        // listeners
+    private void loadListeners(){
         Bukkit.getPluginManager().registerEvents(new BlockBreakListener(this), this);
         Bukkit.getPluginManager().registerEvents(new BlockPlaceListener(this), this);
         Bukkit.getPluginManager().registerEvents(new CreatureSpawnListener(this), this);
-        Bukkit.getPluginManager().registerEvents(new PlayerDamageListener(this), this);
-        Bukkit.getPluginManager().registerEvents(new PlayerHungerListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new EntityDamageListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new FoodLevelChangeListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new InventoryClickListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new PlayerInteractListener(this), this);
         Bukkit.getPluginManager().registerEvents(new PlayerJoinListener(this), this);
         Bukkit.getPluginManager().registerEvents(new PlayerMoveListener(this), this);
         Bukkit.getPluginManager().registerEvents(new PlayerQuitListener(this), this);
-        Bukkit.getPluginManager().registerEvents(new WeatherListener(this), this);
+        Bukkit.getPluginManager().registerEvents(new WeatherChangeListener(this), this);
+    }
+
+    // all players are sent to lobby on reload so all get lobby scoreboard
+    private void preventReloadErrors(){
+        lobbyList.addAll(Bukkit.getOnlinePlayers());  // makes sure that all players are put in the lobby list on reload/start
+
+        for (Player p: Bukkit.getOnlinePlayers()){
+            this.defaultValues.handleJoin(p);
+            this.plugin.worldController.handlePlayerJoin(p);  // gives night vision on reload
+            scoreboardController.refresh("lobby", p);  // makes sure all players get scoreboard on /reload
+        }
+    }
+
+    /*
+    TODO make tntrun join display a window where u can select arenas through an inventory
+    TODO spectating compass tp window
+    TODO double jumps - store a map of players and how many double jumps they have (reset -> config amount) check if their in the air, add y velocity to player
+    TODO maybe put a confirm on the delete command
+    TODO could put all arenas in a single world (too many worlds might look confusing in the server folder) -> require setting positions to protect and stuff like that needing a /tr pos1 /tr pos2
+    TODO single arena map which is then duplicated to host multiple at the same time
+    TODO tps u to corner of world spawn block (make middle)
+
+    To Do:
+    bed item in waiting lobby
+    36 slot with bottom row a page system, left click to tp, right to watch from their perspective
+    join GUI -> arena name, amount of players, time left if counting down, different glass pane per state (hide the disabled arenas), page changing system
+
+    Bugs:
+    can't go from /spec to /tr join
+    players left = 1 only updates on the account that dies
+    auto tab doesn't update when i delete world (arena list is not removed from on delete)
+    relogging causes the arena to think theres two players and start
+    auto completes are broken for edit when adding player name at the end
+     */
+
+    @Override
+    public void onEnable() {
+        isShuttingDown = false;  // handles run later tasks to prevent errors
+        getLogger().info("TntRun plugin started");
+
+        // initialise variables
+        plugin = this;
+        data = new DataManager(this);
+        defaultValues = new DefaultValues(this);
+        blockRemoverTask = new BlockRemoverTask(this);  // tasks
+
+        // loads required to prevent null errors
+        loadControllers();  // controllers
+        loadWorlds();  // makes sure there is a key for each world in the player maps
+        loadCommands();  // commands
+        loadListeners();  // listeners
+        preventReloadErrors();  // loads if the server is /reloaded so there are players present
     }
 
     @Override
     public void onDisable() {
+        isShuttingDown = true;  // handles run later tasks to prevent errors
+
         // tps all players out of worlds on restart to prevent any logic errors
         for (String arenaName: data.getDataConfig().getStringList("arenas")) {  // get worlds
             World arena = Bukkit.getWorld(arenaName);
 
             if (arena != null && !this.gameStatusMap.get(arenaName).isEmpty()){
-                for (Player p : playingMap.get(arenaName)) { // send the players back to the lobby
-                    p.teleport(Bukkit.getWorlds().get(0).getSpawnLocation());
-                }
-                for (Player p : spectatingMap.get(arenaName)) { // send the spectators back to the lobby
-                    p.teleport(Bukkit.getWorlds().get(0).getSpawnLocation());
+
+                for (Player p: Bukkit.getOnlinePlayers()){  // tp everyone to lobby
+                    lobbyController.tp(p);
+                    p.setGameMode(GameMode.SURVIVAL);
+                    p.setAllowFlight(false);
                 }
                 plugin.gameStatusMap.replace(arena.getName(), "restarting");
 

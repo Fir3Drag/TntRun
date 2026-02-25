@@ -57,11 +57,12 @@ public class LeaveCommand implements CommandExecutor, TabCompleter {
                 targetPlayer.sendMessage(ChatColor.YELLOW + "You can not longer edit the lobby.");
             }
 
+            this.plugin.lobbyController.tp(targetPlayer);  // need to call this first to update the lobby list
+
             if (arenas.contains(arenaName)){  // only runs arena features if in an arena
                 // teleport first to prevent getting countdown canceled msgs
                 this.plugin.playerMapsController.removeAll(arenaName, targetPlayer);  // removes the player from the lists for the arena their in
             }
-            this.plugin.lobbyController.tp(targetPlayer);
         }
         else{
             commandSender.sendMessage(ChatColor.RED + "You must be a player to use this command.");

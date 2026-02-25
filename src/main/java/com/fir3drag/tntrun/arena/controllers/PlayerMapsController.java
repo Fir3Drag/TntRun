@@ -4,7 +4,6 @@ import com.fir3drag.tntrun.TntRun;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 
-import java.util.HashMap;
 import java.util.List;
 
 public class PlayerMapsController {
@@ -20,7 +19,9 @@ public class PlayerMapsController {
         if (!playerList.contains(player)){  // prevent duplicates in the list
             playerList.add(player);
             this.plugin.playingMap.replace(arenaName, playerList);  // allows the player to edit the world
-            this.plugin.scoreboardMap.get(player).refresh(arenaName);
+            this.plugin.lobbyList.remove(player);
+            this.plugin.lobbyEditList.remove(player);
+            this.plugin.scoreboardController.refresh(arenaName, player);
         }
     }
 
@@ -30,8 +31,10 @@ public class PlayerMapsController {
         if (!spectatingList.contains(player)){  // prevent duplicates in the list
             spectatingList.add(player);
             this.plugin.spectatingMap.replace(arenaName, spectatingList);  // allows the player to edit the world
+            this.plugin.lobbyList.remove(player);
+            this.plugin.lobbyEditList.remove(player);
             this.plugin.spectatorController.setSpectator(arenaName, player); // needs to be after the replace as it uses the list
-            this.plugin.scoreboardMap.get(player).refresh(arenaName);
+            this.plugin.scoreboardController.refresh(arenaName, player);
         }
     }
 
@@ -41,6 +44,8 @@ public class PlayerMapsController {
         if (!editingList.contains(player)){  // prevent duplicates in the list
             editingList.add(player);
             this.plugin.editingMap.replace(arenaName, editingList);  // allows the player to edit the world
+            this.plugin.lobbyList.remove(player);
+            this.plugin.lobbyEditList.remove(player);
             player.setGameMode(GameMode.CREATIVE);
         }
     }
@@ -51,8 +56,8 @@ public class PlayerMapsController {
         playingList.remove(player);
         this.plugin.playingMap.replace(arenaName, playingList);
         this.plugin.countdownController.checkForCancel(arenaName);  // handles players leaving during start phase
-        this.plugin.winController.checkForWinner(arenaName, player);   // handles players leaving during game
-        this.plugin.scoreboardMap.get(player).refresh(arenaName); // removes scoreboards when player leaves the game
+        this.plugin.scoreboardController.refresh(arenaName, player); // updates scoreboards when player leaves the game
+        this.plugin.gameController.checkForWinner(arenaName, player);   // handles players leaving during game
     }
 
     // remove the player from current spectating list and trigger required functions
@@ -61,7 +66,8 @@ public class PlayerMapsController {
         spectatingList.remove(player);
         this.plugin.spectatingMap.replace(arenaName, spectatingList);
         this.plugin.spectatorController.showAllPlayersYouAndYouAllPlayers(arenaName, player);
-        this.plugin.scoreboardMap.get(player).refresh(arenaName); // removes scoreboards when player leaves the game
+        this.plugin.scoreboardController.refresh(arenaName, player); // updates scoreboards when player leaves the game
+        player.setGameMode(GameMode.SURVIVAL);
     }
 
     // remove the player from the current world editing list and trigger required functions

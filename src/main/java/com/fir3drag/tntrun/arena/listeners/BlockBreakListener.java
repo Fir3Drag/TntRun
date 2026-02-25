@@ -1,12 +1,10 @@
 package com.fir3drag.tntrun.arena.listeners;
 
 import com.fir3drag.tntrun.TntRun;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 
-import java.util.List;
 
 public class BlockBreakListener implements Listener {
     private final TntRun plugin;
@@ -17,20 +15,7 @@ public class BlockBreakListener implements Listener {
 
     @EventHandler
     public void onBlockBreak(BlockBreakEvent event){
-        List<String> arenas = this.plugin.data.getDataConfig().getStringList("arenas");
-        Player player = event.getPlayer();
-        String arenaName = player.getWorld().getName();
-
-        // allow you to edit lobby
-        if (this.plugin.lobbyEditList.contains(player)){
-            return;
-        }
-
-        if (arenas.contains(arenaName)){  // checks its an arena
-            if (this.plugin.editingMap.get(arenaName).contains(player)){  // if they are in the list prevents you getting to the cancel event
-                return;
-            }
-        }
-        event.setCancelled(true);
+        this.plugin.lobbyController.handleBlockBreak(event);
+        this.plugin.gameController.handleBlockBreak(event);
     }
 }

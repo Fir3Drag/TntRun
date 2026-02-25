@@ -1,3 +1,15 @@
+# World settings
+disableDamage: true
+disableWeather: true
+disableHunger: true
+disableNaturalCreatureSpawn: true
+enableNightVision: true
+
+# Lobby settings (lobby items given to players)
+joiningCompassName: "&2Join Arena"
+showPlayersName: "&2Show Players"
+hidePlayersName: "&2Hide Players"
+
 # Arena settings
 
 # countdown (time in seconds)
@@ -24,7 +36,9 @@ tntRemoveDelay: 10  # ticks
 playerDeathYLevel: 0
 voidYLevel: -20  # needs to be less than playerDeathYLevel (will tp players back to world spawn if they fall below this y level)
 
-disableDamage: true
-disableWeather: true
-disableHunger: true
-disableCreatureSpawn: true
+# spectating (spectating items given to players)
+spectatingCompassName: "&2Spectate Players"
+playAgainName: "&2Play Again"
+showSpectatorsName: "&2Show Spectators"
+hideSpectatorsName: "&2Hide Spectators"
+leaveName: "&2Return to Lobby"

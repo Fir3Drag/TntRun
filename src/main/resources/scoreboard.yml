@@ -41,7 +41,7 @@ startingScoreboard:  # max of 15 lines and each line cannot be longer than 40 ch
 # $winCount (player win count)
 #
 # (DUPLICATED LINES DON'T WORK add a space e.g line1 '-', line2 '- ')
-playingScoreboardTitle: "YELLOW TntRun Game"  # cannot be longer than 16 characters
+playingScoreboardTitle: "&eTntRun Game"  # cannot be longer than 16 characters
 playingScoreboard:  # max of 15 lines and each line cannot be longer than 40 characters
   - "&e----------------"
   - "&eMap: $arena"

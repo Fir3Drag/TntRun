@@ -4,11 +4,9 @@ import com.fir3drag.tntrun.TntRun;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class BlockRemoverTask {
@@ -18,6 +16,7 @@ public class BlockRemoverTask {
     public BlockRemoverTask(TntRun plugin) {
         this.plugin = plugin;
     }
+
     private void removeBlock(Block under){
         Block secondUnder = under.getRelative(0, -1, 0);
 
@@ -32,7 +31,11 @@ public class BlockRemoverTask {
         }
     }
 
-    private void removeBlockTask(String arenaName, Location playerLocation){
+    public void triggerBlockRemove(String arenaName, Location playerLocation){
+        if (this.plugin.isShuttingDown){  // prevents bukkit task errors
+            return;
+        }
+
         int tntRemoveDelay = plugin.data.getTntRunConfig().getInt("tntRemoveDelay");
 
         new BukkitRunnable() {
@@ -109,24 +112,5 @@ public class BlockRemoverTask {
                 plugin.rollbackMap.replace(arenaName, rollbackList);
             }
         }.runTaskLater(plugin, tntRemoveDelay);
-    }
-
-    public void move(Player player){
-        List<String> arenas = this.plugin.data.getDataConfig().getStringList("arenas");
-        String arenaName = player.getWorld().getName();
-
-        // checks the player is in an arena and is playing the game
-        if (arenas.contains(arenaName) && this.plugin.playingMap.get(arenaName).contains(player)){
-            if (this.plugin.gameStatusMap.get(arenaName).equals("playing") && this.plugin.startingCountdownMap.get(arenaName).isGracePeriodOver()){  // checks the game has started
-                Block blockUnderPlayer = player.getLocation().subtract(0, 1, 0).getBlock();
-                Block secondBlockUnderPlayer = player.getLocation().subtract(0, 2, 0).getBlock();
-
-                if (blockUnderPlayer.getType().equals(Material.SAND) || blockUnderPlayer.getType().equals(Material.GRAVEL)){
-                    if (secondBlockUnderPlayer.getType().equals(Material.TNT)){
-                        removeBlockTask(arenaName, player.getLocation());
-                    }
-                }
-            }
-        }
     }
 }

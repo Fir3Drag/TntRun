@@ -22,11 +22,11 @@ public class StartingCountdownTask {
         this.arenaName = arena.getName();
     }
 
-    public void sendTitle(Player player, String title, String subTitle){
-        player.sendTitle(ChatColor.YELLOW  + title, ChatColor.YELLOW + subTitle);
-    }
-
     public void startCountdown() {
+        if (plugin.isShuttingDown){  // prevents bukkit task errors
+            return;
+        }
+
         int fullCountdown = this.plugin.data.getTntRunConfig().getInt("fullCountdown");
         int halfCountdown = this.plugin.data.getTntRunConfig().getInt("halfCountdown");
         int quarterCountdown = this.plugin.data.getTntRunConfig().getInt("quarterCountdown");
@@ -48,7 +48,7 @@ public class StartingCountdownTask {
                     isCounting = false;
 
                     for (Player p: plugin.playingMap.get(arenaName)){  // triggers the move event so that they can't stand still at the start
-                        plugin.blockRemoverTask.move(p);
+                        plugin.gameController.handleTntRemover(p);
                     }
                     this.cancel();
                 }
@@ -58,14 +58,14 @@ public class StartingCountdownTask {
 
                     for (Player p: plugin.playingMap.get(arenaName)){ // msg players
                         p.sendMessage(ChatColor.YELLOW + "Go!");
-                        sendTitle(p, "Go!", "");
-                        plugin.scoreboardMap.get(p).refresh(arenaName);
+                        p.sendTitle(ChatColor.YELLOW  + "Go!", ChatColor.YELLOW + "");
+                        plugin.scoreboardController.refresh(arenaName, p);
                         p.teleport(arena.getSpawnLocation());
                     }
                     for (Player p: plugin.spectatingMap.get(arenaName)){ // msg spectators
                         p.sendMessage(ChatColor.YELLOW + "Go!");
-                        sendTitle(p, "Go!", "");
-                        plugin.scoreboardMap.get(p).refresh(arenaName);
+                        p.sendTitle(ChatColor.YELLOW  + "Go!", ChatColor.YELLOW + "");
+                        plugin.scoreboardController.refresh(arenaName, p);
                         p.teleport(arena.getSpawnLocation());
                     }
                 }
@@ -75,9 +75,9 @@ public class StartingCountdownTask {
                             p.sendMessage(ChatColor.YELLOW + "Starting in " + countdownTime + " seconds.");
                         }
                         if (countdownTime <= 5) {
-                            sendTitle(p, String.valueOf(countdownTime), "");
+                            p.sendTitle(ChatColor.YELLOW  + String.valueOf(countdownTime), ChatColor.YELLOW + "");
                         }
-                        plugin.scoreboardMap.get(p).refresh(arenaName);
+                        plugin.scoreboardController.refresh(arenaName, p);
 
                     }
                     for (Player p: plugin.spectatingMap.get(arenaName)){  // msg spectators starting info
@@ -85,9 +85,9 @@ public class StartingCountdownTask {
                             p.sendMessage(ChatColor.YELLOW + "Starting in " + countdownTime + " seconds.");
                         }
                         if (countdownTime <= 5) {
-                            sendTitle(p, String.valueOf(countdownTime), "");
+                            p.sendTitle(ChatColor.YELLOW  + String.valueOf(countdownTime), ChatColor.YELLOW + "");
                         }
-                        plugin.scoreboardMap.get(p).refresh(arenaName);
+                        plugin.scoreboardController.refresh(arenaName, p);
                     }
                 }
                 countdownTime--;
@@ -106,11 +106,11 @@ public class StartingCountdownTask {
 
         for (Player p: this.plugin.playingMap.get(arenaName)){  // msg players
             p.sendMessage(ChatColor.YELLOW + "Countdown canceled.");
-            plugin.scoreboardMap.get(p).refresh(arenaName);
+            plugin.scoreboardController.refresh(arenaName, p);
         }
         for (Player p: this.plugin.spectatingMap.get(arenaName)){ // msg spectators
             p.sendMessage(ChatColor.YELLOW + "Countdown canceled.");
-            plugin.scoreboardMap.get(p).refresh(arenaName);
+            plugin.scoreboardController.refresh(arenaName, p);
         }
     }
 
@@ -120,10 +120,10 @@ public class StartingCountdownTask {
 
             // updates the player scoreboard instantly to the new value
             for (Player p: this.plugin.playingMap.get(arenaName)){
-                plugin.scoreboardMap.get(p).refresh(arenaName);
+                plugin.scoreboardController.refresh(arenaName, p);
             }
             for (Player p: this.plugin.spectatingMap.get(arenaName)){
-                plugin.scoreboardMap.get(p).refresh(arenaName);
+                plugin.scoreboardController.refresh(arenaName, p);
             }
 
         }
