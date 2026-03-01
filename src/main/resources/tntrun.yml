@@ -22,11 +22,10 @@ forceStartCountdown: 5
 requiredPlayersToStartCountdown: 2  # cannot be set less than 2 (will be set to 2 in memory when run)
 requiredPlayersToStartHalfCountdown: 4
 requiredPlayersToStartQuarterCountdown: 8
-maxPlayers: 8
+maxPlayers: 8  # max = 36  (the spectating compass will cannot hold anymore currently)
 
 # starting
 forcePlayerGameMode: true
-clearInventory: true
 setFullHealth: true
 setFullHunger: true
 

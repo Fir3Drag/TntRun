@@ -43,8 +43,8 @@ public class DeleteCommand implements SubCommand {
             return;
         }
 
-        List<String> arenas = this.plugin.data.getDataConfig().getStringList("arenas");
-        List<String> disabledArenas = this.plugin.data.getDataConfig().getStringList("disabledArenas");
+        List<String> arenas = this.plugin.defaultValues.getArenas();
+        List<String> disabledArenas = this.plugin.defaultValues.getDisabledArenas();
 
         if (args.length == 0){
             commandSender.sendMessage(ChatColor.RED + "/tntrun delete [arena]");
@@ -68,7 +68,7 @@ public class DeleteCommand implements SubCommand {
             }
 
             for (Player p: arena.getPlayers()){  // if players in the world send them to default world
-                p.teleport(Bukkit.getWorlds().get(0).getSpawnLocation());
+                this.plugin.lobbyController.tp(p);
             }
             // cancel any countdown
             this.plugin.startingCountdownMap.get(arenaName).cancelCountdown();
@@ -76,11 +76,12 @@ public class DeleteCommand implements SubCommand {
             // updates configs
             arenas.remove(arenaName);
             disabledArenas.remove(arenaName);
-            this.plugin.data.getDataConfig().set("Arenas", arenas);
+            this.plugin.data.getDataConfig().set("arenas", arenas);
             this.plugin.data.getDataConfig().set("disabledArenas", disabledArenas);
             this.plugin.data.saveConfig();
 
             this.plugin.removeDefaultArenaValues(arenaName);  // update map values
+            this.plugin.lobbyController.createJoiningArenaInventory();
 
             // unloads and deletes world files
             Bukkit.unloadWorld(arenaName, false);
@@ -96,7 +97,7 @@ public class DeleteCommand implements SubCommand {
     @Override
     public List<String> onTabComplete(CommandSender commandSender, Command command, String s, String[] args) {
         if (args.length == 1){
-            List<String> allCompletions = this.plugin.data.getDataConfig().getStringList("arenas");
+            List<String> allCompletions = this.plugin.defaultValues.getArenas();
             List<String> completions = new ArrayList<>();
 
             for (String completion: allCompletions){ // dynamically updates the tab list depending on whats written

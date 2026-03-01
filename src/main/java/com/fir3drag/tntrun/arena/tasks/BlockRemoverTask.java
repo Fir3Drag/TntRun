@@ -36,7 +36,7 @@ public class BlockRemoverTask {
             return;
         }
 
-        int tntRemoveDelay = plugin.data.getTntRunConfig().getInt("tntRemoveDelay");
+        int tntRemoveDelay = this.plugin.defaultValues.getTntRemoveDelay();
 
         new BukkitRunnable() {
             @Override

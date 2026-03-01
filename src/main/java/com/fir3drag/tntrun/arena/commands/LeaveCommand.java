@@ -30,7 +30,7 @@ public class LeaveCommand implements CommandExecutor, TabCompleter {
             return true;
         }
 
-        List<String> arenas = this.plugin.data.getDataConfig().getStringList("arenas");
+        List<String> arenas = this.plugin.defaultValues.getArenas();
 
         if (commandSender instanceof Player){
             Player player = (Player) commandSender;

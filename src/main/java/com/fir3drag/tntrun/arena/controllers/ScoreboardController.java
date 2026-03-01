@@ -22,13 +22,12 @@ public class ScoreboardController {
 
     // handle the user written scoreboard from the config to get colours and keywords
     private void loadScoreboardConfig(String arenaName, String configName, Player player){
-        List<String> startingScoreboardList = this.plugin.data.getScoreboardConfig().getStringList(configName);
-        int scoreCount = startingScoreboardList.size();
+        List<String> scoreboardList = this.plugin.defaultValues.getScoreboard(configName);
+        int scoreCount = scoreboardList.size();
         int stopCount = 1;  // if this goes above 15 it stops making lines
 
         // create the objective
-        String title = this.plugin.data.getScoreboardConfig().getString(configName + "Title");
-        title = ChatColor.translateAlternateColorCodes('&', title);
+        String title = this.plugin.defaultValues.getScoreboardTitle(configName);
 
         if (title.length() > 16){  // prevents errors
             title = title.substring(0, 16);
@@ -42,7 +41,7 @@ public class ScoreboardController {
         objective.setDisplaySlot(DisplaySlot.SIDEBAR);
 
         // loop through each string and turn it into a scoreboard line
-        for (String line: startingScoreboardList){
+        for (String line: scoreboardList){
             if (stopCount > 15){
                 break;
             }
@@ -51,7 +50,7 @@ public class ScoreboardController {
                 // keyword variables
                 String duration = String.valueOf(this.plugin.startingCountdownMap.get(arenaName).getCountdownTime());
                 int playerCount = this.plugin.playingMap.get(arenaName).size();
-                int maxPlayers = this.plugin.data.getTntRunConfig().getInt("maxPlayers");
+                int maxPlayers = this.plugin.defaultValues.getMaxPlayers();
 
                 int playTime = this.plugin.playingCountUpMap.get(arenaName).getCountdownTime();
                 int intSeconds = playTime % 60;
@@ -85,8 +84,6 @@ public class ScoreboardController {
 
             int winCount = this.plugin.data.getDataConfig().getConfigurationSection(player.getUniqueId().toString()).getInt("winCount");
             line = line.replace("$winCount", String.valueOf(winCount));  // tries to get win count
-
-            line = ChatColor.translateAlternateColorCodes('&', line);  // translate colors
 
             if (line.length() > 40){  // prevent errors
                 line = line.substring(0, 40);
@@ -133,7 +130,7 @@ public class ScoreboardController {
 
     // handles updating your scoreboard on server join
     public void handleJoin(Player player){
-        List<String> arenas = this.plugin.data.getDataConfig().getStringList("arenas");
+        List<String> arenas = this.plugin.defaultValues.getArenas();
         String arenaName = player.getWorld().getName();
 
         if (arenas.contains(arenaName)){

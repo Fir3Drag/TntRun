@@ -68,6 +68,13 @@ public class DataManager {
             YamlConfiguration dataDefaultConfig = YamlConfiguration.loadConfiguration(new InputStreamReader(dataDefaultStream));
             dataConfig.setDefaults(dataDefaultConfig);
         }
+
+        if (this.plugin.defaultValues != null){  // handles the default values being null on data manager creation
+            // reload all values into memory
+            this.plugin.defaultValues.loadTntRunConfig();
+            this.plugin.defaultValues.loadScoreboardConfig();
+            this.plugin.defaultValues.loadDataConfig();
+        }
     }
 
     public FileConfiguration getTntRunConfig()
@@ -111,6 +118,11 @@ public class DataManager {
         catch (IOException e)
         {
             this.plugin.getLogger().log(Level.SEVERE, "Could not save config to " + this.dataFile, e);
+        }
+
+        if (this.plugin.defaultValues != null) {  // handles the default values being null on data manager creation
+            // reloads the data.yml values into memory
+            this.plugin.defaultValues.loadDataConfig();
         }
     }
 

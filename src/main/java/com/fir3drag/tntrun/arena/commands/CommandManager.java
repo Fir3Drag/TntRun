@@ -66,7 +66,7 @@ public class CommandManager implements CommandExecutor, TabCompleter {
             }
             return completions;
         }
-        if (args.length == 2 && subCommands.containsKey(args[0])){  // check there is subcommand present
+        if (args.length >= 2 && subCommands.containsKey(args[0])){  // check there is subcommand present
             SubCommand subCommand = subCommands.get(args[0]);
             if (subCommand != null){
                 String[] subArgs = Arrays.copyOfRange(args, 1, args.length);

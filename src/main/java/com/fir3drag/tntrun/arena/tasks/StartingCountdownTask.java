@@ -27,10 +27,11 @@ public class StartingCountdownTask {
             return;
         }
 
-        int fullCountdown = this.plugin.data.getTntRunConfig().getInt("fullCountdown");
-        int halfCountdown = this.plugin.data.getTntRunConfig().getInt("halfCountdown");
-        int quarterCountdown = this.plugin.data.getTntRunConfig().getInt("quarterCountdown");
-        int gracePeriod = this.plugin.data.getTntRunConfig().getInt("gracePeriod");
+        int fullCountdown = this.plugin.defaultValues.getFullCountdown();
+
+        int halfCountdown = this.plugin.defaultValues.getHalfCountdown();
+        int quarterCountdown = this.plugin.defaultValues.getQuarterCountdown();
+        int gracePeriod = this.plugin.defaultValues.getGracePeriod();
 
         if (isCounting) {
             return;
@@ -57,16 +58,18 @@ public class StartingCountdownTask {
                     plugin.playingCountUpMap.get(arenaName).startCountdown();
 
                     for (Player p: plugin.playingMap.get(arenaName)){ // msg players
+                        plugin.worldController.tpCenterOfBlock(p, arena.getSpawnLocation());
                         p.sendMessage(ChatColor.YELLOW + "Go!");
                         p.sendTitle(ChatColor.YELLOW  + "Go!", ChatColor.YELLOW + "");
                         plugin.scoreboardController.refresh(arenaName, p);
-                        p.teleport(arena.getSpawnLocation());
+                        plugin.gameController.setPlayingInventory(p);
+
                     }
                     for (Player p: plugin.spectatingMap.get(arenaName)){ // msg spectators
+                        plugin.worldController.tpCenterOfBlock(p, arena.getSpawnLocation());
                         p.sendMessage(ChatColor.YELLOW + "Go!");
                         p.sendTitle(ChatColor.YELLOW  + "Go!", ChatColor.YELLOW + "");
                         plugin.scoreboardController.refresh(arenaName, p);
-                        p.teleport(arena.getSpawnLocation());
                     }
                 }
                 else if (countdownTime > 0) {  // displays the time to the players

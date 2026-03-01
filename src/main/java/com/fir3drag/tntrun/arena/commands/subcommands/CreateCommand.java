@@ -24,8 +24,8 @@ public class CreateCommand implements SubCommand {
             return;
         }
 
-        List<String> arenas = this.plugin.data.getDataConfig().getStringList("arenas");
-        List<String> disabledArenas = this.plugin.data.getDataConfig().getStringList("disabledArenas");
+        List<String> arenas = this.plugin.defaultValues.getArenas();
+        List<String> disabledArenas = this.plugin.defaultValues.getDisabledArenas();
 
         if (args.length != 1){
             commandSender.sendMessage(ChatColor.RED + "/tntrun create [arena]");
@@ -74,7 +74,7 @@ public class CreateCommand implements SubCommand {
                 Player player = (Player) commandSender;
 
                 this.plugin.playerMapsController.addToEditing(arena.getName(), player);
-                player.teleport(arena.getSpawnLocation());
+                this.plugin.worldController.tpCenterOfBlock(player, arena.getSpawnLocation());
                 player.setGameMode(GameMode.CREATIVE);
                 commandSender.sendMessage(ChatColor.YELLOW + "Type /leave to return to main world.");
             }

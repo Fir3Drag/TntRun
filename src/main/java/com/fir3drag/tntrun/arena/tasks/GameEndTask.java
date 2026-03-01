@@ -44,6 +44,8 @@ public class GameEndTask {
                 plugin.rollbackMap.replace(arenaName, rollbackMap);
 
                 plugin.gameStatusMap.replace(arenaName, "stopped");
+
+                plugin.lobbyController.createJoiningArenaInventory();
             }
         }.runTaskLater(plugin, 20 * 5L);
     }

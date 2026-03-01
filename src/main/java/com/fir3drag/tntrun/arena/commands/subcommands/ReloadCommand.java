@@ -24,11 +24,12 @@ public class ReloadCommand implements SubCommand {
             return;
         }
         commandSender.sendMessage(ChatColor.YELLOW + "Reloading");
+        // reloads the files and tries to pull all their values into memory
         this.plugin.data.reloadConfig();
         commandSender.sendMessage(ChatColor.YELLOW + "Done");
 
         // reloads the scoreboards for players
-        List<String> arenas = this.plugin.data.getDataConfig().getStringList("arenas");
+        List<String> arenas = this.plugin.defaultValues.getArenas();
 
         for (Player p: Bukkit.getOnlinePlayers()){
             String arenaName = p.getWorld().getName();

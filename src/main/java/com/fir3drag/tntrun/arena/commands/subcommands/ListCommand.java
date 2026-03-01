@@ -21,8 +21,8 @@ public class ListCommand implements SubCommand {
         if (!this.plugin.permController.check(commandSender, "tntrun.list")){
             return;
         }
-        commandSender.sendMessage(ChatColor.YELLOW + "Arenas: " + this.plugin.data.getDataConfig().getStringList("arenas"));
-        commandSender.sendMessage(ChatColor.YELLOW + "Disabled arenas: " + this.plugin.data.getDataConfig().getStringList("disabledArenas"));
+        commandSender.sendMessage(ChatColor.YELLOW + "Arenas: " + this.plugin.defaultValues.getArenas());
+        commandSender.sendMessage(ChatColor.YELLOW + "Disabled arenas: " + this.plugin.defaultValues.getDisabledArenas());
     }
 
     @Override

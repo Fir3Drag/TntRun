@@ -28,8 +28,8 @@ public class DisableCommand implements SubCommand {
             commandSender.sendMessage(ChatColor.RED + "/tntrun disable [arena]");
             return;
         }
-        List<String> arenas = this.plugin.data.getDataConfig().getStringList("arenas");
-        List<String> disabledArenas = this.plugin.data.getDataConfig().getStringList("disabledArenas");
+        List<String> arenas = this.plugin.defaultValues.getArenas();
+        List<String> disabledArenas = this.plugin.defaultValues.getDisabledArenas();
         String arenaName = args[0];
         World arena = Bukkit.getWorld(arenaName);
 
@@ -65,14 +65,15 @@ public class DisableCommand implements SubCommand {
         disabledArenas.add(arenaName);
         this.plugin.data.getDataConfig().set("disabledArenas", disabledArenas);
         this.plugin.data.saveConfig();
+        this.plugin.lobbyController.createJoiningArenaInventory();
         commandSender.sendMessage(ChatColor.YELLOW + "Arena '" + arenaName + "' successfully disabled.");
     }
 
     @Override
     public List<String> onTabComplete(CommandSender commandSender, Command command, String s, String[] args) {
         if (args.length == 1){
-            List<String> allCompletions = this.plugin.data.getDataConfig().getStringList("arenas");
-            List<String> disabledArenas = this.plugin.data.getDataConfig().getStringList("disabledArenas");
+            List<String> allCompletions = this.plugin.defaultValues.getArenas();
+            List<String> disabledArenas = this.plugin.defaultValues.getDisabledArenas();
             List<String> completions = new ArrayList<>();
 
             for (String arena: disabledArenas){ // remove all disabled arenas from the list

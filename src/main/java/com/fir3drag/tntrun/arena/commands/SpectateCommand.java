@@ -27,7 +27,7 @@ public class SpectateCommand implements CommandExecutor, TabCompleter {
             return true;
         }
 
-        List<String> arenas = this.plugin.data.getDataConfig().getStringList("arenas");
+        List<String> arenas = this.plugin.defaultValues.getArenas();
 
         if (commandSender instanceof Player){
             Player player = (Player) commandSender;
@@ -42,7 +42,7 @@ public class SpectateCommand implements CommandExecutor, TabCompleter {
             String targetArenaName = null;
 
             if (targetPlayerName.equalsIgnoreCase(player.getDisplayName())){ // stop you spectating yourself
-                player.sendMessage(ChatColor.RED + "You cannot spectator yourself");
+                player.sendMessage(ChatColor.RED + "You cannot spectator yourself.");
                 return true;
             }
 
@@ -80,7 +80,7 @@ public class SpectateCommand implements CommandExecutor, TabCompleter {
             }
 
             // send you to the arena (directly to target player)
-            player.teleport(targetPlayer.getLocation());
+            this.plugin.worldController.tpCenterOfBlock(player, targetPlayer.getLocation());
             this.plugin.playerMapsController.addToSpectating(targetArenaName, player);
         }
         else {

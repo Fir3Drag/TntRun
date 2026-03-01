@@ -2,6 +2,7 @@ package com.fir3drag.tntrun.arena.commands.subcommands;
 
 import com.fir3drag.tntrun.TntRun;
 import com.fir3drag.tntrun.arena.commands.interfaces.SubCommand;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -28,8 +29,8 @@ public class EnableCommand implements SubCommand {
             commandSender.sendMessage(ChatColor.RED + "/tntrun enable [arena]");
             return;
         }
-        List<String> arenas = this.plugin.data.getDataConfig().getStringList("arenas");
-        List<String> disabledArenas = this.plugin.data.getDataConfig().getStringList("disabledArenas");
+        List<String> arenas = this.plugin.defaultValues.getArenas();
+        List<String> disabledArenas = this.plugin.defaultValues.getDisabledArenas();
         String arenaName = args[0];
 
         if (!disabledArenas.contains(arenaName)){  // can't enable when not disabled
@@ -37,6 +38,9 @@ public class EnableCommand implements SubCommand {
         }
 
         // enable arena
+        Bukkit.broadcastMessage(arenas.toString());
+        Bukkit.broadcastMessage(" ");
+        Bukkit.broadcastMessage(disabledArenas.toString());
         if (!arenas.contains(arenaName)){
             commandSender.sendMessage(ChatColor.RED + "That arena does not exist.");
             return;
@@ -44,13 +48,14 @@ public class EnableCommand implements SubCommand {
         disabledArenas.remove(arenaName);
         this.plugin.data.getDataConfig().set("disabledArenas", disabledArenas);
         this.plugin.data.saveConfig();
+        this.plugin.lobbyController.createJoiningArenaInventory();
         commandSender.sendMessage(ChatColor.YELLOW + "Successfully enabled arena '" + arenaName + "'.");
     }
 
     @Override
     public List<String> onTabComplete(CommandSender commandSender, Command command, String s, String[] args) {
         if (args.length == 1){
-            List<String> allCompletions = this.plugin.data.getDataConfig().getStringList("disabledArenas");
+            List<String> allCompletions = this.plugin.defaultValues.getDisabledArenas();
             List<String> completions = new ArrayList<>();
 
             for (String completion: allCompletions){ // dynamically updates the tab list depending on whats written

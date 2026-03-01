@@ -1,12 +1,14 @@
 package com.fir3drag.tntrun.arena.controllers;
 
 import com.fir3drag.tntrun.TntRun;
-import org.bukkit.ChatColor;
+import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.SkullMeta;
 
 import java.util.List;
 
@@ -48,8 +50,7 @@ public class ItemController {
         ItemMeta meta = item.getItemMeta();
 
         if (meta != null){
-            meta.setDisplayName(ChatColor.translateAlternateColorCodes('&',
-                    this.plugin.data.getTntRunConfig().getString("joiningCompassName")));
+            meta.setDisplayName(this.plugin.defaultValues.getJoiningCompassName());
             item.setItemMeta(meta);
         }
         return item;
@@ -62,8 +63,7 @@ public class ItemController {
         ItemMeta meta = item.getItemMeta();
 
         if (meta != null){
-            meta.setDisplayName(ChatColor.translateAlternateColorCodes('&',
-                    this.plugin.data.getTntRunConfig().getString("showPlayersName")));
+            meta.setDisplayName(this.plugin.defaultValues.getShowPlayersName());
             item.setItemMeta(meta);
         }
         return item;
@@ -76,8 +76,7 @@ public class ItemController {
         ItemMeta meta = item.getItemMeta();
 
         if (meta != null){
-            meta.setDisplayName(ChatColor.translateAlternateColorCodes('&',
-                    this.plugin.data.getTntRunConfig().getString("hidePlayersName")));
+            meta.setDisplayName(this.plugin.defaultValues.getHidePlayersName());
             item.setItemMeta(meta);
         }
         return item;
@@ -90,8 +89,7 @@ public class ItemController {
         ItemMeta meta = item.getItemMeta();
 
         if (meta != null){
-            meta.setDisplayName(ChatColor.translateAlternateColorCodes('&',
-                    this.plugin.data.getTntRunConfig().getString("spectatingCompassName")));
+            meta.setDisplayName(this.plugin.defaultValues.getSpectatingCompassName());
             item.setItemMeta(meta);
         }
         return item;
@@ -103,8 +101,7 @@ public class ItemController {
         ItemMeta meta = item.getItemMeta();
 
         if (meta != null){
-            meta.setDisplayName(ChatColor.translateAlternateColorCodes('&',
-                    this.plugin.data.getTntRunConfig().getString("playAgainName")));
+            meta.setDisplayName(this.plugin.defaultValues.getPlayAgainName());
             item.setItemMeta(meta);
         }
         return item;
@@ -117,8 +114,7 @@ public class ItemController {
         ItemMeta meta = item.getItemMeta();
 
         if (meta != null){
-            meta.setDisplayName(ChatColor.translateAlternateColorCodes('&',
-                    this.plugin.data.getTntRunConfig().getString("showSpectatorsName")));
+            meta.setDisplayName(this.plugin.defaultValues.getShowSpectatorsName());
             item.setItemMeta(meta);
         }
         return item;
@@ -131,8 +127,7 @@ public class ItemController {
         ItemMeta meta = item.getItemMeta();
 
         if (meta != null){
-            meta.setDisplayName(ChatColor.translateAlternateColorCodes('&',
-                    this.plugin.data.getTntRunConfig().getString("hideSpectatorsName")));
+            meta.setDisplayName(this.plugin.defaultValues.getHideSpectatorsName());
             item.setItemMeta(meta);
         }
         return item;
@@ -144,8 +139,7 @@ public class ItemController {
         ItemMeta meta = item.getItemMeta();
 
         if (meta != null){
-            meta.setDisplayName(ChatColor.translateAlternateColorCodes('&',
-                    this.plugin.data.getTntRunConfig().getString("leaveName")));
+            meta.setDisplayName(this.plugin.defaultValues.getLeaveName());
             item.setItemMeta(meta);
         }
         return item;
@@ -186,7 +180,7 @@ public class ItemController {
     }
 
     public void handleItems(PlayerInteractEvent event){
-        List<String> arenas = this.plugin.data.getDataConfig().getStringList("arenas");
+        List<String> arenas = this.plugin.defaultValues.getArenas();
         ItemStack item = event.getItem();
         Player player = event.getPlayer();
         String arenaName = player.getWorld().getName();
@@ -197,7 +191,7 @@ public class ItemController {
             if (actionName.contains("LEFT_CLICK") || actionName.contains("RIGHT_CLICK")){
                 // LOBBY
                 if (item.getItemMeta().getDisplayName().equals(joiningCompass.getItemMeta().getDisplayName())){
-                    player.performCommand("tr join");
+                    player.performCommand("tntrun join");
                 }
                 else if (item.getItemMeta().getDisplayName().equals(showPlayers.getItemMeta().getDisplayName())){
                     if (this.plugin.lobbyList.contains(player)){
@@ -218,30 +212,79 @@ public class ItemController {
 
                 // SPECTATING
                 else if (item.getItemMeta().getDisplayName().equals(spectatingCompass.getItemMeta().getDisplayName())){  // used to tp to players as a spectator
-                    //TODO
+                    this.plugin.gameController.openSpectatingInventory(player);
                 }
                 else if (item.getItemMeta().getDisplayName().equals(playAgain.getItemMeta().getDisplayName())){  // used to bring up the inventory where you select arenas
-                    player.performCommand("tr join");
+                    player.performCommand("tntrun join");
                 }
                 else if ((item.getItemMeta().getDisplayName().equals(showSpectators.getItemMeta().getDisplayName()))){  // used to toggle player visibility
                     if (arenas.contains(arenaName) && this.plugin.spectatingMap.get(arenaName).contains(player)){
                         this.plugin.data.getDataConfig().getConfigurationSection(player.getUniqueId().toString()).set("spectatorPlayersVisible", true);
                         this.plugin.data.saveConfig();
-                        this.plugin.spectatorController.setInventory(player);
-                        this.plugin.spectatorController.showSpectators(arenaName, player);  // show spectators
+                        this.plugin.gameController.setSpectatorInventory(player);
+                        this.plugin.gameController.showSpectators(arenaName, player);  // show spectators
                     }
                 }
                 else if ((item.getItemMeta().getDisplayName().equals(hideSpectators.getItemMeta().getDisplayName()))){  // used to toggle player visibility
                     if (arenas.contains(arenaName) && this.plugin.spectatingMap.get(arenaName).contains(player)){
                         this.plugin.data.getDataConfig().getConfigurationSection(player.getUniqueId().toString()).set("spectatorPlayersVisible", false);
                         this.plugin.data.saveConfig();
-                        this.plugin.spectatorController.setInventory(player);
-                        this.plugin.spectatorController.hideSpectators(arenaName, player);  // show spectators
+                        this.plugin.gameController.setSpectatorInventory(player);
+                        this.plugin.gameController.hideSpectators(arenaName, player);  // show spectators
                     }
                 }
                 else if ((item.getItemMeta().getDisplayName().equals(leave.getItemMeta().getDisplayName()))){
                     player.performCommand("leave");
                 }
+            }
+        }
+    }
+
+    public void handleItems(InventoryClickEvent event){
+        if (event.getWhoClicked() instanceof Player) {
+            Player player = ((Player) event.getWhoClicked()).getPlayer();
+
+            List<String> arenas = this.plugin.defaultValues.getArenas();
+            String arenaName = player.getWorld().getName();
+
+            if (arenas.contains(arenaName)) {  // if their in an arena
+                if (!this.plugin.editingMap.get(arenaName).contains(player)) {  // and not editing it
+                    event.setCancelled(true);
+                }
+            }
+
+            ItemStack item = event.getCurrentItem();
+
+            // PLAYER HEADS
+            if (item != null && item.getItemMeta() != null) {
+                String actionName = event.getAction().toString();
+
+                if (item.getType() == Material.SKULL_ITEM && item.getDurability() == (short) 3) {
+                    if (item.getItemMeta() instanceof SkullMeta) {
+                        // gets the owner of the skull
+                        String targetName = ((SkullMeta) item.getItemMeta()).getOwner();
+                        Player target = null;
+
+                        // finds the owner in the playing map (makes sure they are playing)
+                        for (Player p : this.plugin.playingMap.get(arenaName)) {
+                            if (p.getDisplayName().equals(targetName)) {
+                                target = p;
+                            }
+                        }
+
+                        if (target != null) {  // if their found tp to them
+                            if (actionName.contains("PICKUP_ALL")) {
+                                player.teleport(target);
+                                player.closeInventory();
+                            } else if (actionName.contains("PICKUP_HALF")) {
+                                player.setGameMode(GameMode.SPECTATOR);
+                                player.setSpectatorTarget(target);
+                                player.closeInventory();
+                            }
+                        }
+                    }
+                }
+
             }
         }
     }

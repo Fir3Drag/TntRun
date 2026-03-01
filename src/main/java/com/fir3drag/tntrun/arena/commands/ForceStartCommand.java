@@ -24,8 +24,8 @@ public class ForceStartCommand implements CommandExecutor, TabCompleter {
             return true;
         }
 
-        List<String> arenas = this.plugin.data.getDataConfig().getStringList("arenas");
-        int forceStartCountdown = this.plugin.data.getTntRunConfig().getInt("forceStartCountdown");
+        List<String> arenas = this.plugin.defaultValues.getArenas();
+        int forceStartCountdown = this.plugin.defaultValues.getForceStartCountdown();
 
         if (commandSender instanceof Player){
 
