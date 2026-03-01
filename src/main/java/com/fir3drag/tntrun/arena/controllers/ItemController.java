@@ -1,8 +1,7 @@
 package com.fir3drag.tntrun.arena.controllers;
 
 import com.fir3drag.tntrun.TntRun;
-import org.bukkit.GameMode;
-import org.bukkit.Material;
+import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
@@ -254,6 +253,8 @@ public class ItemController {
             }
 
             ItemStack item = event.getCurrentItem();
+            String currentWorldName = player.getWorld().getName();
+            int maxPlayers = this.plugin.defaultValues.getMaxPlayers();
 
             // PLAYER HEADS
             if (item != null && item.getItemMeta() != null) {
@@ -285,6 +286,58 @@ public class ItemController {
                     }
                 }
 
+                else if (item.getType() == Material.STAINED_GLASS_PANE && item.getItemMeta().getDisplayName() != null) {
+                    arenaName = ChatColor.stripColor(item.getItemMeta().getDisplayName());
+
+                    // using the display name of the item to check if it's a valid arena
+                    if (arenas.contains(arenaName)) {
+                        String arenaState = this.plugin.gameStatusMap.get(arenaName);
+                        World arena = Bukkit.getWorld(arenaName);
+
+                        if (arena == null) {
+                            player.sendMessage(ChatColor.RED + "Cannot find arena '" + arenaName + "'.");
+                            player.closeInventory();
+                            return;
+                        }
+
+                        if (this.plugin.gameStatusMap.get(arenaName).equals("restarting")) {
+                            player.sendMessage(ChatColor.RED + "The arena '" + arenaName + "' is currently restarting.");
+                            player.closeInventory();
+                            return;
+                        }
+
+                        if (this.plugin.playingMap.get(arenaName).contains(player)) {
+                            player.sendMessage(ChatColor.RED + "Already connected to arena '" + arenaName + "'.");
+                            player.closeInventory();
+                            return;
+                        }
+
+                        if (this.plugin.gameStatusMap.get(arenaName).equals("starting") && this.plugin.playingMap.get(arenaName).size() >= maxPlayers) {
+                            player.sendMessage(ChatColor.RED + "The arena '" + arenaName + "' is full, right click to join as a spectator.");
+                            player.closeInventory();
+                            return;
+                        }
+
+                        // handles the world you were in (done after to make sure msgs are sent correctly, e.g. tp player out of world before the countdown cancel msg appears
+                        if (arenas.contains(currentWorldName)) { // current world checks
+                            // if the player is already in an arena remove them from the lists before tping them to the new arena
+                            this.plugin.playerMapsController.removeAll(currentWorldName, player);
+                        }
+
+                        if (actionName.contains("PICKUP_ALL")) {
+                            if (arenaState.equals("stopped") || arenaState.equals("starting")) {
+                                player.closeInventory();
+                                this.plugin.worldController.tpCenterOfBlock(player, arena.getSpawnLocation());  // teleport first to make sure they get the right chat msgs
+                                this.plugin.playerMapsController.addToPlaying(arenaName, player);  // adds the player to the playing list
+                            }
+                        }
+                        else if (actionName.contains("PICKUP_HALF") && arenaState.equals("playing")) {
+                            player.closeInventory();
+                            this.plugin.worldController.tpCenterOfBlock(player, arena.getSpawnLocation());  // teleport first to make sure they get the right chat msgs
+                            this.plugin.playerMapsController.addToSpectating(arenaName, player);// adds the player to the spectating list
+                        }
+                    }
+                }
             }
         }
     }

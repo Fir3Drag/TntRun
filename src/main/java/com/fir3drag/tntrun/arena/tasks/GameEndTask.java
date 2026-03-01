@@ -23,6 +23,7 @@ public class GameEndTask {
             @Override
             public void run() {
                 plugin.gameStatusMap.replace(arenaName, "restarting");
+                plugin.lobbyController.createJoiningArenaInventory();
 
                 // send the players back to the lobby and clear the maps holding player info
                 for (Player p : new ArrayList<>(plugin.playingMap.get(arenaName))) {

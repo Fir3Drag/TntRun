@@ -14,7 +14,6 @@ public class InventoryClickListener implements Listener {
 
     @EventHandler
     public void onInventoryClick(InventoryClickEvent event){
-        this.plugin.lobbyController.handleLobbyInventoryClick(event);
         this.plugin.itemController.handleItems(event);
     }
 }

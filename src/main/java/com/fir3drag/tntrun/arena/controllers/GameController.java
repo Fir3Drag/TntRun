@@ -49,17 +49,20 @@ public class GameController {
                     p.sendMessage(ChatColor.YELLOW + winner.getDisplayName() + " has won!");
                     p.sendTitle(ChatColor.YELLOW  + winner.getDisplayName() + " has won!", ChatColor.YELLOW + "");
                     showAllPlayersYouAndYouAllPlayers(arenaName, p);
+                    this.plugin.scoreboardController.refresh(arenaName, p);
                 }
                 for (Player p : this.plugin.spectatingMap.get(arenaName)) { // msgs spectators
                     p.sendMessage(ChatColor.YELLOW + winner.getDisplayName() + " has won!");
                     p.sendTitle(ChatColor.YELLOW  + winner.getDisplayName() + " has won!", ChatColor.YELLOW + "");
                     showAllPlayersYouAndYouAllPlayers(arenaName, p);
+                    this.plugin.scoreboardController.refresh(arenaName, p);
                 }
 
                 int playerWinCount = this.plugin.data.getDataConfig().getConfigurationSection(winner.getUniqueId().toString()).getInt("winCount");
                 this.plugin.data.getDataConfig().getConfigurationSection(winner.getUniqueId().toString()).set("winCount", ++playerWinCount);
                 this.plugin.data.saveConfig();
                 this.plugin.gameStatusMap.replace(arenaName, "gameOver");
+                plugin.lobbyController.createJoiningArenaInventory();
                 new GameEndTask(plugin, player.getWorld());
             }
         }

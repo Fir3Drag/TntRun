@@ -93,6 +93,7 @@ public class StartingCountdownTask {
                         plugin.scoreboardController.refresh(arenaName, p);
                     }
                 }
+                plugin.lobbyController.createJoiningArenaInventory();
                 countdownTime--;
             }
         };
